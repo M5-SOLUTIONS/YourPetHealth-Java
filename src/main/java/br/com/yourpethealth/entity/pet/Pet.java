@@ -4,7 +4,7 @@ import br.com.yourpethealth.entity.usuario.Usuario;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "pets")
+@Table(name = "t_pets")
 public class Pet {
 
     @Id
