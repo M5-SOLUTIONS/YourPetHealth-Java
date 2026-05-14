@@ -1,7 +1,7 @@
 package br.com.yourpethealth.entity.pet;
 
+import br.com.yourpethealth.entity.usuario.Usuario;
 import jakarta.persistence.*;
-import org.apache.catalina.User;
 
 @Entity
 @Table(name = "pets")
@@ -13,7 +13,7 @@ public class Pet {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    private User usuario;
+    private Usuario usuario;
 
     private String nome;
 
@@ -29,7 +29,7 @@ public class Pet {
     public Pet() {
     }
 
-    public Pet(Long id, User usuario, String nome, String raca,
+    public Pet(Long id, Usuario usuario, String nome, String raca,
                Integer idade, Double peso, SexoPet sexo) {
         this.id = id;
         this.usuario = usuario;
@@ -44,7 +44,7 @@ public class Pet {
         return id;
     }
 
-    public User getUsuario() {
+    public Usuario getUsuario() {
         return usuario;
     }
 
@@ -72,7 +72,7 @@ public class Pet {
         this.id = id;
     }
 
-    public void setUsuario(User usuario) {
+    public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
 
