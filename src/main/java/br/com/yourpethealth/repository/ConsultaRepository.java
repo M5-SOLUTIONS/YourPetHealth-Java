@@ -2,6 +2,14 @@ package br.com.yourpethealth.repository;
 
 import br.com.yourpethealth.entity.consulta.Consulta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
+import java.util.List;
+
+@Repository
+public interface ConsultaRepository
+        extends JpaRepository<Consulta, Long> {
+
+    List<Consulta> findByPetId(Long petId);
+
 }
