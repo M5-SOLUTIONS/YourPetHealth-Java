@@ -1,5 +1,6 @@
 package br.com.yourpethealth.entity.pet;
 
+import br.com.yourpethealth.entity.usuario.Responsavel;
 import br.com.yourpethealth.entity.usuario.Usuario;
 import jakarta.persistence.*;
 
@@ -13,7 +14,7 @@ public class Pet {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
+    private Responsavel responsavel;
 
     private String nome;
 
@@ -29,10 +30,10 @@ public class Pet {
     public Pet() {
     }
 
-    public Pet(Long id, Usuario usuario, String nome, String raca,
+    public Pet(Long id, Responsavel responsavel, String nome, String raca,
                Integer idade, Double peso, SexoPet sexo) {
         this.id = id;
-        this.usuario = usuario;
+        this.responsavel = responsavel;
         this.nome = nome;
         this.raca = raca;
         this.idade = idade;
@@ -44,8 +45,8 @@ public class Pet {
         return id;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Responsavel getResponsavel() {
+        return responsavel;
     }
 
     public String getNome() {
@@ -72,8 +73,8 @@ public class Pet {
         this.id = id;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setResponsavel(Responsavel responsavel) {
+        this.responsavel = responsavel;
     }
 
     public void setNome(String nome) {

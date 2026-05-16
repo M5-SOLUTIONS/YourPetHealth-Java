@@ -4,10 +4,10 @@ import br.com.yourpethealth.dto.pet.PetAtualizarDTO;
 import br.com.yourpethealth.dto.pet.PetCadastroDTO;
 import br.com.yourpethealth.dto.pet.PetListagemDTO;
 import br.com.yourpethealth.entity.pet.Pet;
-import br.com.yourpethealth.entity.usuario.Usuario;
+import br.com.yourpethealth.entity.usuario.Responsavel;
 import br.com.yourpethealth.exception.IdNaoEncontradoException;
 import br.com.yourpethealth.repository.PetRepository;
-import br.com.yourpethealth.repository.UsuarioRepository;
+import br.com.yourpethealth.repository.ResponsavelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +17,20 @@ import java.util.List;
 public class PetService {
 
     private final PetRepository petRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final ResponsavelRepository responsavelRepository;
 
-    public PetService(PetRepository petRepository, UsuarioRepository usuarioRepository) {
+    public PetService(PetRepository petRepository, ResponsavelRepository responsavelRepository) {
         this.petRepository = petRepository;
-        this.usuarioRepository = usuarioRepository;
+        this.responsavelRepository = responsavelRepository;
     }
 
     @Transactional
     public PetListagemDTO createPet(PetCadastroDTO dto) {
-        Usuario usuario = usuarioRepository.findById(dto.usuarioId())
-                .orElseThrow(() -> new IdNaoEncontradoException("Usuário não encontrado"));
+        Responsavel responsavel = responsavelRepository.findById(dto.responsavelId())
+                .orElseThrow(() -> new IdNaoEncontradoException("Responsável não encontrado"));
 
         Pet pet = new Pet();
-        pet.setUsuario(usuario);
+        pet.setResponsavel(responsavel);
         pet.setNome(dto.nome());
         pet.setRaca(dto.raca());
         pet.setIdade(dto.idade());
@@ -79,8 +79,8 @@ public class PetService {
     }
 
     @Transactional(readOnly = true)
-    public List<PetListagemDTO> readPetsByUsuario(Long usuarioId) {
-        return petRepository.findByUsuarioId(usuarioId)
+    public List<PetListagemDTO> readPetsByResponsavel(Long responsavelId) {
+        return petRepository.findByResponsavelId(responsavelId)
                 .stream()
                 .map(pet -> new PetListagemDTO(
                         pet.getId(),

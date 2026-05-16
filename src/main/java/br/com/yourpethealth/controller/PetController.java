@@ -49,7 +49,7 @@ public class PetController {
             @PathVariable Long usuarioId) {
 
         List<PetListagemDTO> pets =
-                service.readPetsByUsuario(usuarioId);
+                service.readPetsByResponsavel(usuarioId);
 
         return ResponseEntity.ok(pets);
     }
