@@ -24,7 +24,6 @@ public class PetController {
     @PostMapping
     public ResponseEntity<PetListagemDTO> create(@Valid @RequestBody PetCadastroDTO dto) {
         PetListagemDTO novoPet = service.createPet(dto);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPet);
     }
 
@@ -35,12 +34,8 @@ public class PetController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PetListagemDTO> readById(
-            @PathVariable Long id) {
-
-        PetListagemDTO pet =
-                service.readPetById(id);
-
+    public ResponseEntity<PetListagemDTO> readById(@PathVariable Long id) {
+        PetListagemDTO pet = service.readPetById(id);
         return ResponseEntity.ok(pet);
     }
 
