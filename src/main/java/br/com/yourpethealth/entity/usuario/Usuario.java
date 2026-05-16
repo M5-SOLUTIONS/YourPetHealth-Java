@@ -3,7 +3,7 @@ package br.com.yourpethealth.entity.usuario;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "t_users")
 public class Usuario {
 
     @Id
