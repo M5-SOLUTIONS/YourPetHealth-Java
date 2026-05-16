@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "alertas")
+@Table(name = "t_alertas")
 public class Alerta {
 
     @Id
@@ -33,9 +33,7 @@ public class Alerta {
     public Alerta() {
     }
 
-    public Alerta(Long id, Pet pet, String titulo,
-                  String descricao, LocalDate data,
-                  TipoAlerta tipo, StatusAlerta status) {
+    public Alerta(Long id, Pet pet, String titulo, String descricao, LocalDate data, TipoAlerta tipo, StatusAlerta status) {
         this.id = id;
         this.pet = pet;
         this.titulo = titulo;
