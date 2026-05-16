@@ -4,10 +4,13 @@ import br.com.yourpethealth.dto.consulta.ConsultaAtualizarDTO;
 import br.com.yourpethealth.dto.consulta.ConsultaCadastroDTO;
 import br.com.yourpethealth.dto.consulta.ConsultaListagemDTO;
 import br.com.yourpethealth.entity.consulta.Consulta;
+import br.com.yourpethealth.entity.historico.HistoricoClinico;
+import br.com.yourpethealth.entity.historico.TipoHistorico;
 import br.com.yourpethealth.entity.pet.Pet;
 import br.com.yourpethealth.entity.usuario.Veterinario;
 import br.com.yourpethealth.exception.IdNaoEncontradoException;
 import br.com.yourpethealth.repository.ConsultaRepository;
+import br.com.yourpethealth.repository.HistoricoClinicoRepository;
 import br.com.yourpethealth.repository.PetRepository;
 import br.com.yourpethealth.repository.VeterinarioRepository;
 import org.springframework.stereotype.Service;
@@ -21,21 +24,25 @@ public class ConsultaService {
     private final ConsultaRepository consultaRepository;
     private final PetRepository petRepository;
     private final VeterinarioRepository veterinarioRepository;
+    private final HistoricoClinicoRepository historicoRepository;
 
-    public ConsultaService(ConsultaRepository consultaRepository, PetRepository petRepository, VeterinarioRepository veterinarioRepository) {
+    public ConsultaService(ConsultaRepository consultaRepository, PetRepository petRepository,
+            VeterinarioRepository veterinarioRepository,
+            HistoricoClinicoRepository historicoRepository) {
+
         this.consultaRepository = consultaRepository;
         this.petRepository = petRepository;
         this.veterinarioRepository = veterinarioRepository;
+        this.historicoRepository = historicoRepository;
     }
 
     @Transactional
     public ConsultaListagemDTO createConsulta(ConsultaCadastroDTO dto) {
-
         Pet pet = petRepository.findById(dto.petId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
 
         Veterinario veterinario = veterinarioRepository.findById(dto.veterinarioId())
-                            .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
+                                .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
 
         Consulta consulta = new Consulta();
         consulta.setPet(pet);
@@ -46,6 +53,13 @@ public class ConsultaService {
         consulta.setObservacoes(dto.observacoes());
         consulta.setStatus(dto.status());
         Consulta salva = consultaRepository.save(consulta);
+
+        HistoricoClinico historico = new HistoricoClinico();
+        historico.setPet(pet);
+        historico.setTipo(TipoHistorico.CONSULTA);
+        historico.setDescricao("Consulta cadastrada: " + consulta.getDescricao());
+        historico.setData(consulta.getData());
+        historicoRepository.save(historico);
 
         return new ConsultaListagemDTO(
                 salva.getId(),
@@ -61,7 +75,6 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public List<ConsultaListagemDTO> readConsultasByPet(Long petId) {
-
         return consultaRepository.findByPetId(petId)
                 .stream()
                 .map(consulta -> new ConsultaListagemDTO(
@@ -81,7 +94,6 @@ public class ConsultaService {
     public ConsultaListagemDTO readConsultaById(Long id) {
         Consulta consulta = consultaRepository.findById(id)
                 .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
-
         return new ConsultaListagemDTO(
                 consulta.getId(),
                 consulta.getPet().getId(),
@@ -97,18 +109,13 @@ public class ConsultaService {
     @Transactional
     public ConsultaListagemDTO updateConsulta(Long id, ConsultaAtualizarDTO dto) {
         Consulta consulta = consultaRepository.findById(id)
-                    .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
+                .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
 
-        Veterinario veterinario = veterinarioRepository.findById(dto.veterinarioId())
-                        .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
-
-        consulta.setVeterinario(veterinario);
         consulta.setTipo(dto.tipo());
         consulta.setDescricao(dto.descricao());
         consulta.setData(dto.data());
         consulta.setObservacoes(dto.observacoes());
         consulta.setStatus(dto.status());
-
         Consulta atualizada = consultaRepository.save(consulta);
 
         return new ConsultaListagemDTO(
@@ -126,7 +133,7 @@ public class ConsultaService {
     @Transactional
     public void deleteConsulta(Long id) {
         Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
+                        .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
         consultaRepository.delete(consulta);
     }
 
