@@ -1,6 +1,7 @@
 package br.com.yourpethealth.entity.consulta;
 
 import br.com.yourpethealth.entity.pet.Pet;
+import br.com.yourpethealth.entity.usuario.Veterinario;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -14,8 +15,12 @@ public class Consulta {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id")
+    @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
+
+    @ManyToOne
+    @JoinColumn(name = "veterinario_id", nullable = false)
+    private Veterinario veterinario;
 
     private String tipo;
 
@@ -23,8 +28,6 @@ public class Consulta {
     private String descricao;
 
     private LocalDate data;
-
-    private String veterinario;
 
     @Column(length = 1000)
     private String observacoes;
@@ -35,15 +38,13 @@ public class Consulta {
     public Consulta() {
     }
 
-    public Consulta(Long id, Pet pet, String tipo, String descricao,
-                    LocalDate data, String veterinario,
-                    String observacoes, StatusConsulta status) {
+    public Consulta(Long id, Pet pet, Veterinario veterinario, String tipo, String descricao, LocalDate data, String observacoes, StatusConsulta status) {
         this.id = id;
         this.pet = pet;
+        this.veterinario = veterinario;
         this.tipo = tipo;
         this.descricao = descricao;
         this.data = data;
-        this.veterinario = veterinario;
         this.observacoes = observacoes;
         this.status = status;
     }
@@ -56,6 +57,10 @@ public class Consulta {
         return pet;
     }
 
+    public Veterinario getVeterinario() {
+        return veterinario;
+    }
+
     public String getTipo() {
         return tipo;
     }
@@ -66,10 +71,6 @@ public class Consulta {
 
     public LocalDate getData() {
         return data;
-    }
-
-    public String getVeterinario() {
-        return veterinario;
     }
 
     public String getObservacoes() {
@@ -88,6 +89,10 @@ public class Consulta {
         this.pet = pet;
     }
 
+    public void setVeterinario(Veterinario veterinario) {
+        this.veterinario = veterinario;
+    }
+
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
@@ -98,10 +103,6 @@ public class Consulta {
 
     public void setData(LocalDate data) {
         this.data = data;
-    }
-
-    public void setVeterinario(String veterinario) {
-        this.veterinario = veterinario;
     }
 
     public void setObservacoes(String observacoes) {

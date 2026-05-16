@@ -2,9 +2,8 @@ package br.com.yourpethealth.entity.usuario;
 
 import jakarta.persistence.*;
 
-@Entity
-@Table(name = "t_users")
-public class Usuario {
+@MappedSuperclass
+public abstract class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,17 +17,6 @@ public class Usuario {
     private String senha;
 
     private String telefone;
-
-    public Usuario() {
-    }
-
-    public Usuario(Long id, String nome, String email, String senha, String telefone) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.telefone = telefone;
-    }
 
     public Long getId() {
         return id;

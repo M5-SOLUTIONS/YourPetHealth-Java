@@ -27,17 +27,22 @@ public class ConsultaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novaConsulta);
     }
 
-    @GetMapping("/pet/{petId}")
-    public ResponseEntity<List<ConsultaListagemDTO>> readByPet(@PathVariable Long petId) {
-
-        List<ConsultaListagemDTO> consultas = service.readConsultasByPet(petId);
-        return ResponseEntity.ok(consultas);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaListagemDTO> readById(@PathVariable Long id) {
         ConsultaListagemDTO consulta = service.readConsultaById(id);
         return ResponseEntity.ok(consulta);
+    }
+
+    @GetMapping("/pet/{petId}")
+    public ResponseEntity<List<ConsultaListagemDTO>> readByPet(@PathVariable Long petId) {
+        List<ConsultaListagemDTO> consultas = service.readConsultasByPet(petId);
+        return ResponseEntity.ok(consultas);
+    }
+
+    @GetMapping("/veterinario/{veterinarioId}")
+    public ResponseEntity<List<ConsultaListagemDTO>> readByVeterinario(@PathVariable Long veterinarioId) {
+        List<ConsultaListagemDTO> consultas = service.readConsultasByVeterinario(veterinarioId);
+        return ResponseEntity.ok(consultas);
     }
 
     @PutMapping("/{id}")

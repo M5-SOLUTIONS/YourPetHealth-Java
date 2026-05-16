@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Positive;
 
 public record PetCadastroDTO(
 
-        @NotNull(message = "O usuário é obrigatório")
-        Long usuarioId,
+        @NotNull(message = "O responsável é obrigatório")
+        Long responsavelId,
 
         @NotBlank(message = "O nome é obrigatório")
         String nome,
