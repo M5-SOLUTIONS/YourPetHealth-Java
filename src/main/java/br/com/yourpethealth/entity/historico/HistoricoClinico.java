@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
-//@Entity
-//@Table(name = "t_historico_clinico")
+@Entity
+@Table(name = "t_historico_clinico")
 public class HistoricoClinico {
 
     @Id
@@ -17,7 +17,8 @@ public class HistoricoClinico {
     @JoinColumn(name = "pet_id")
     private Pet pet;
 
-    private String tipo;
+    @Enumerated(EnumType.STRING)
+    private TipoHistorico tipo;
 
     @Column(length = 1000)
     private String descricao;
@@ -27,8 +28,7 @@ public class HistoricoClinico {
     public HistoricoClinico() {
     }
 
-    public HistoricoClinico(Long id, Pet pet, String tipo,
-                            String descricao, LocalDate data) {
+    public HistoricoClinico(Long id, Pet pet, TipoHistorico tipo, String descricao, LocalDate data) {
         this.id = id;
         this.pet = pet;
         this.tipo = tipo;
@@ -44,7 +44,7 @@ public class HistoricoClinico {
         return pet;
     }
 
-    public String getTipo() {
+    public TipoHistorico getTipo() {
         return tipo;
     }
 
@@ -64,7 +64,7 @@ public class HistoricoClinico {
         this.pet = pet;
     }
 
-    public void setTipo(String tipo) {
+    public void setTipo(TipoHistorico tipo) {
         this.tipo = tipo;
     }
 
