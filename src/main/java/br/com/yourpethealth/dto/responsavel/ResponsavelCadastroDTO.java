@@ -1,9 +1,9 @@
-package br.com.yourpethealth.dto.usuario;
+package br.com.yourpethealth.dto.responsavel;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record UsuarioCadastroDTO(
+public record ResponsavelCadastroDTO(
 
         @NotBlank(message = "O nome é obrigatório")
         String nome,

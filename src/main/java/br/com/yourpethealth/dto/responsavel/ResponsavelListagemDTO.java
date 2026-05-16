@@ -1,6 +1,6 @@
-package br.com.yourpethealth.dto.usuario;
+package br.com.yourpethealth.dto.responsavel;
 
-public record UsuarioListagemDTO(
+public record ResponsavelListagemDTO(
 
         Long id,
         String nome,
