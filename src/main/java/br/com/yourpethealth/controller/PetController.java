@@ -44,20 +44,15 @@ public class PetController {
         return ResponseEntity.ok(pet);
     }
 
-    @GetMapping("/users/{usuarioId}")
-    public ResponseEntity<List<PetListagemDTO>> readByUsuario(
-            @PathVariable Long usuarioId) {
-
-        List<PetListagemDTO> pets =
-                service.readPetsByResponsavel(usuarioId);
-
+    @GetMapping("/responsavel/{responsavelId}")
+    public ResponseEntity<List<PetListagemDTO>> readByResponsavel(@PathVariable Long responsavelId) {
+        List<PetListagemDTO> pets = service.readPetsByResponsavel(responsavelId);
         return ResponseEntity.ok(pets);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PetListagemDTO> update(@PathVariable Long id, @Valid @RequestBody PetAtualizarDTO dto) {
-        PetListagemDTO atualizado =
-                service.updatePet(id, dto);
+        PetListagemDTO atualizado = service.updatePet(id, dto);
         return ResponseEntity.ok(atualizado);
     }
 
