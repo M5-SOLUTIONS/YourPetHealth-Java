@@ -51,6 +51,12 @@ public class ConsultaController {
         return ResponseEntity.ok(atualizada);
     }
 
+    @PatchMapping("/{id}/concluir")
+    public ResponseEntity<ConsultaListagemDTO> concluir(@PathVariable Long id) {
+        ConsultaListagemDTO consulta = service.concluirConsulta(id);
+        return ResponseEntity.ok(consulta);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteConsulta(id);

@@ -4,6 +4,7 @@ import br.com.yourpethealth.dto.consulta.ConsultaAtualizarDTO;
 import br.com.yourpethealth.dto.consulta.ConsultaCadastroDTO;
 import br.com.yourpethealth.dto.consulta.ConsultaListagemDTO;
 import br.com.yourpethealth.entity.consulta.Consulta;
+import br.com.yourpethealth.entity.consulta.StatusConsulta;
 import br.com.yourpethealth.entity.historico.HistoricoClinico;
 import br.com.yourpethealth.entity.historico.TipoHistorico;
 import br.com.yourpethealth.entity.pet.Pet;
@@ -42,7 +43,7 @@ public class ConsultaService {
                 .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
 
         Veterinario veterinario = veterinarioRepository.findById(dto.veterinarioId())
-                                .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
+                        .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
 
         Consulta consulta = new Consulta();
         consulta.setPet(pet);
@@ -53,13 +54,6 @@ public class ConsultaService {
         consulta.setObservacoes(dto.observacoes());
         consulta.setStatus(dto.status());
         Consulta salva = consultaRepository.save(consulta);
-
-        HistoricoClinico historico = new HistoricoClinico();
-        historico.setPet(pet);
-        historico.setTipo(TipoHistorico.CONSULTA);
-        historico.setDescricao("Consulta cadastrada: " + consulta.getDescricao());
-        historico.setData(consulta.getData());
-        historicoRepository.save(historico);
 
         return new ConsultaListagemDTO(
                 salva.getId(),
@@ -152,5 +146,32 @@ public class ConsultaService {
                         consulta.getStatus()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public ConsultaListagemDTO concluirConsulta(Long id) {
+        Consulta consulta = consultaRepository.findById(id)
+                            .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
+
+        consulta.setStatus(StatusConsulta.CONCLUIDA);
+        Consulta atualizada = consultaRepository.save(consulta);
+
+        HistoricoClinico historico = new HistoricoClinico();
+        historico.setPet(consulta.getPet());
+        historico.setTipo(TipoHistorico.CONSULTA);
+        historico.setDescricao("Consulta realizada: " + consulta.getDescricao());
+        historico.setData(consulta.getData());
+        historicoRepository.save(historico);
+
+        return new ConsultaListagemDTO(
+                atualizada.getId(),
+                atualizada.getPet().getId(),
+                atualizada.getVeterinario().getId(),
+                atualizada.getTipo(),
+                atualizada.getDescricao(),
+                atualizada.getData(),
+                atualizada.getObservacoes(),
+                atualizada.getStatus()
+        );
     }
 }
