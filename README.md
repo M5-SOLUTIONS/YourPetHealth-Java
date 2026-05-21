@@ -26,15 +26,43 @@ A API foi desenvolvida utilizando arquitetura REST e persistência em banco de d
 - Spring Data JPA
 - Hibernate
 - Oracle Database
-- Swagger/OpenAPI
-- Postman
-- IntelliJ IDEA
+- Swagger
+
+---
+
+# Cronograma de Desenvolvimento
+
+## Cronograma do Projeto
+
+![Cronograma](imagens/Print1Responsabilidades.png)
+![Cronograma](imagens/Print2Responsabilidades.png)
+
+---
+
+## Organização das Atividades
+
+O cronograma foi elaborado para organizar as etapas do desenvolvimento da aplicação, incluindo:
+
+- modelagem do banco de dados
+- desenvolvimento backend
+- documentação Swagger
+- criação dos diagramas
+- testes da API
+- organização final do projeto
+
+Todas as atividades foram desenvolvidas seguindo o planejamento definido para o projeto.
 
 ---
 
 # Arquitetura da Aplicação
 
 O projeto foi desenvolvido seguindo arquitetura em camadas, separando responsabilidades para facilitar manutenção, escalabilidade e organização do código.
+
+## Diagrama da Arquitetura
+
+![Arquitetura](imagens/ArquiteturaYourPetHealth.drawio.png)
+
+---
 
 ## Camadas da Aplicação
 
@@ -108,7 +136,20 @@ src/main/java/br/com/yourpethealth
 ├── repository
 ├── service
 ├── exception
-````
+```
+
+---
+
+# Diagrama de Classes das Entidades
+
+![DiagramaClasses](imagens/DiagramaYourPetHealth.drawio.png)
+
+
+---
+
+# Diagrama Entidade Relacionamento (DER)
+
+![DiagramaRelacionamento](imagens/DiagramaYourPetHealth.drawio.png)
 
 ---
 
@@ -118,11 +159,11 @@ src/main/java/br/com/yourpethealth
 
 Permite:
 
-* cadastrar responsáveis
-* listar responsáveis
-* buscar responsável por ID
-* atualizar dados
-* remover responsáveis
+- cadastrar responsáveis
+- listar responsáveis
+- buscar responsável por ID
+- atualizar dados
+- remover responsáveis
 
 ---
 
@@ -130,11 +171,11 @@ Permite:
 
 Permite:
 
-* cadastrar veterinários
-* listar veterinários
-* buscar veterinário por ID
-* atualizar informações
-* remover veterinários
+- cadastrar veterinários
+- listar veterinários
+- buscar veterinário por ID
+- atualizar informações
+- remover veterinários
 
 ---
 
@@ -142,11 +183,11 @@ Permite:
 
 Permite:
 
-* cadastrar pets vinculados a um responsável
-* listar pets
-* buscar pets por responsável
-* atualizar informações
-* remover pets
+- cadastrar pets vinculados a um responsável
+- listar pets
+- buscar pets por responsável
+- atualizar informações
+- remover pets
 
 ---
 
@@ -154,13 +195,13 @@ Permite:
 
 Permite:
 
-* cadastrar consultas veterinárias
-* listar consultas
-* buscar consultas por pet
-* buscar consultas por veterinário
-* atualizar consultas
-* concluir consultas
-* remover consultas
+- cadastrar consultas veterinárias
+- listar consultas
+- buscar consultas por pet
+- buscar consultas por veterinário
+- atualizar consultas
+- concluir consultas
+- remover consultas
 
 Ao concluir uma consulta, o sistema automaticamente registra a consulta no histórico clínico do pet.
 
@@ -170,9 +211,9 @@ Ao concluir uma consulta, o sistema automaticamente registra a consulta no hist�
 
 Permite:
 
-* listar histórico clínico de um pet
-* buscar histórico por ID
-* remover registros do histórico
+- listar histórico clínico de um pet
+- buscar histórico por ID
+- remover registros do histórico
 
 ---
 
@@ -184,7 +225,7 @@ Um responsável pode possuir vários pets.
 
 Relacionamento:
 
-* OneToMany
+- OneToMany
 
 ---
 
@@ -194,7 +235,7 @@ Um pet pode possuir várias consultas veterinárias.
 
 Relacionamento:
 
-* OneToMany
+- OneToMany
 
 ---
 
@@ -204,7 +245,7 @@ Um veterinário pode realizar várias consultas.
 
 Relacionamento:
 
-* OneToMany
+- OneToMany
 
 ---
 
@@ -214,7 +255,7 @@ Um pet pode possuir vários registros clínicos.
 
 Relacionamento:
 
-* OneToMany
+- OneToMany
 
 ---
 
@@ -224,11 +265,11 @@ O sistema utiliza Oracle Database para persistência das informações.
 
 As principais tabelas são:
 
-* `t_responsaveis`
-* `t_veterinarios`
-* `t_pets`
-* `t_consultas`
-* `t_historico_clinico`
+- `t_responsaveis`
+- `t_veterinarios`
+- `t_pets`
+- `t_consultas`
+- `t_historico_clinico`
 
 ---
 
@@ -248,9 +289,9 @@ Responsável pelos relacionamentos entre as tabelas.
 
 Exemplos:
 
-* pet vinculado ao responsável
-* consulta vinculada ao pet
-* consulta vinculada ao veterinário
+- pet vinculado ao responsável
+- consulta vinculada ao pet
+- consulta vinculada ao veterinário
 
 ---
 
@@ -260,8 +301,8 @@ Impede duplicidade de informações importantes.
 
 Exemplos:
 
-* e-mail
-* CRMV
+- e-mail
+- CRMV
 
 ---
 
@@ -271,8 +312,8 @@ Valida valores específicos.
 
 Exemplos:
 
-* sexo do pet
-* status da consulta
+- sexo do pet
+- status da consulta
 
 ---
 
@@ -286,7 +327,7 @@ http://localhost:8080
 
 ---
 
-# Swagger/OpenAPI
+# Swagger
 
 A documentação da API pode ser acessada através do endereço:
 
@@ -336,17 +377,17 @@ DELETE /historico/{id}
 
 Os endpoints foram testados utilizando:
 
-* Postman
-* Swagger UI
+- Postman
+- Swagger UI
 
 Foram realizados testes de:
 
-* cadastro
-* consulta
-* atualização
-* exclusão
-* validações
-* tratamento de erros
+- cadastro
+- consulta
+- atualização
+- exclusão
+- validações
+- tratamento de erros
 
 ---
 
@@ -354,10 +395,10 @@ Foram realizados testes de:
 
 A aplicação possui tratamento de exceções para:
 
-* registros não encontrados
-* dados inválidos
-* erros de validação
-* inconsistências de negócio
+- registros não encontrados
+- dados inválidos
+- erros de validação
+- inconsistências de negócio
 
 ---
 
@@ -387,21 +428,4 @@ Executar a classe principal Spring Boot.
 
 ```http
 http://localhost:8080/swagger-ui/index.html
-```
-
----
-
-# Considerações Finais
-
-O projeto foi desenvolvido utilizando boas práticas de desenvolvimento backend com Spring Boot, separação em camadas, utilização de DTOs, documentação Swagger e persistência relacional com Oracle Database.
-
-A aplicação possui estrutura escalável e preparada para futuras evoluções, como:
-
-* autenticação
-* autorização
-* upload de exames
-* controle financeiro
-* prontuário digital completo
-
-```
 ```
