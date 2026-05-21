@@ -149,7 +149,7 @@ src/main/java/br/com/yourpethealth
 
 # Diagrama Entidade Relacionamento (DER)
 
-![DiagramaRelacionamento](imagens/DiagramaYourPetHealth.drawio.png)
+![DiagramaRelacionamento](imagens/DER.jpeg)
 
 ---
 
