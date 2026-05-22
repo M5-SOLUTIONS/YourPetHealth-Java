@@ -339,6 +339,16 @@ http://localhost:8080/swagger-ui/index.html
 
 # Exemplos de Endpoints
 
+## Responsáveis
+
+### Post:
+![PostResposavel](documentos/imagens/PostResponsavel.png)
+
+## Veterinários
+
+### Post:
+![PostVeterinario](documentos/imagens/PostVeterinario.png)
+
 ## Pets
 
 ```http
@@ -348,7 +358,8 @@ GET /pets/{id}
 PUT /pets/{id}
 DELETE /pets/{id}
 ```
-
+### Post:
+![PostPet](documentos/imagens/PostPet.png)
 ---
 
 ## Consultas
@@ -360,6 +371,11 @@ PUT /consultas/{id}
 PATCH /consultas/{id}/concluir
 DELETE /consultas/{id}
 ```
+### Post:
+![PostConsulta](documentos/imagens/PostConsulta.png)
+
+### Patch:
+![PatchConsulta](documentos/imagens/PatchConsulta.png)
 
 ---
 
@@ -370,6 +386,9 @@ GET /historico/pet/{petId}
 GET /historico/{id}
 DELETE /historico/{id}
 ```
+
+### Get:
+![GetHistorico](documentos/imagens/GetHistorico.png)
 
 ---
 
