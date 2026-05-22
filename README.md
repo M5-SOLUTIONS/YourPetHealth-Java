@@ -34,8 +34,8 @@ A API foi desenvolvida utilizando arquitetura REST e persistência em banco de d
 
 ## Cronograma do Projeto
 
-![Cronograma](imagens/Print1Responsabilidades.png)
-![Cronograma](imagens/Print2Responsabilidades.png)
+![Cronograma](documentos/imagens/Print1Responsabilidades.png)
+![Cronograma](documentos/imagens/Print2Responsabilidades.png)
 
 ---
 
@@ -60,7 +60,7 @@ O projeto foi desenvolvido seguindo arquitetura em camadas, separando responsabi
 
 ## Diagrama da Arquitetura
 
-![Arquitetura](imagens/ArquiteturaYourPetHealth.drawio.png)
+![Arquitetura](documentos/imagens/ArquiteturaYourPetHealth.drawio.png)
 
 ---
 
@@ -142,14 +142,14 @@ src/main/java/br/com/yourpethealth
 
 # Diagrama de Classes das Entidades
 
-![DiagramaClasses](imagens/DiagramaYourPetHealth.drawio.png)
+![DiagramaClasses](documentos/imagens/DiagramaYourPetHealth.drawio.png)
 
 
 ---
 
 # Diagrama Entidade Relacionamento (DER)
 
-![DiagramaRelacionamento](imagens/DER.jpeg)
+![DiagramaRelacionamento](documentos/imagens/DER.jpeg)
 
 ---
 
@@ -377,7 +377,7 @@ DELETE /historico/{id}
 
 Os endpoints foram testados utilizando:
 
-- Postman
+- Postman (Arquivo para importar os testes está na pasta documentos)
 - Swagger UI
 
 Foram realizados testes de:
