@@ -4,6 +4,16 @@ Projeto desenvolvido em Java utilizando Spring Boot, Maven, JPA/Hibernate e Orac
 
 ---
 
+# Desenvolvido por
+
+- Guilherme Cintra RM562850
+- Erick de Faria Gama RM561951
+- Matheus Nascimento Corregio RM563765
+- Pedro Fonseca de Almeida RM563466
+- Daniel Fonseca de Almeida RM563045
+
+---
+
 # Objetivo
 
 A aplicação tem como objetivo auxiliar no gerenciamento clínico veterinário, permitindo:
