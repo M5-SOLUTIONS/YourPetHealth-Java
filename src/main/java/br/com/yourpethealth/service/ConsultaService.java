@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -96,7 +97,7 @@ public class ConsultaService {
                 .pet(consulta.getPet())
                 .tipo(TipoHistorico.CONSULTA)
                 .descricao(request.observacoes())
-                .data(LocalDateTime.now())
+                .data(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
                 .build();
         historicoRepository.save(historico);
 
