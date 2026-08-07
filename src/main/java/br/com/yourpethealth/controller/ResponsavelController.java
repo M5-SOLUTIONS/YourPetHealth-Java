@@ -1,8 +1,8 @@
 package br.com.yourpethealth.controller;
 
-import br.com.yourpethealth.dto.responsavel.ResponsavelAtualizarDTO;
-import br.com.yourpethealth.dto.responsavel.ResponsavelCadastroDTO;
-import br.com.yourpethealth.dto.responsavel.ResponsavelListagemDTO;
+import br.com.yourpethealth.assembler.ResponsavelAssembler;
+import br.com.yourpethealth.dto.request.ResponsavelRequest;
+import br.com.yourpethealth.dto.response.ResponsavelResponse;
 import br.com.yourpethealth.service.ResponsavelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,71 +21,66 @@ import java.util.List;
 
 @Tag(name = "Responsáveis")
 @RestController
-@RequestMapping("/responsaveis")
+@RequestMapping("/api/responsaveis")
+@RequiredArgsConstructor
 public class ResponsavelController {
 
     private final ResponsavelService service;
-
-    public ResponsavelController(ResponsavelService service) {
-        this.service = service;
-    }
+    private final ResponsavelAssembler assembler;
 
     @Operation(summary = "Cadastra um responsável", responses = {
             @ApiResponse(responseCode = "201", description = "Responsável cadastrado com sucesso",
-                    content = @Content(schema = @Schema(
-                            implementation = ResponsavelListagemDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Erro ao cadastrar responsável")
+                    content = @Content(schema = @Schema(implementation = ResponsavelResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de validação")
     })
     @PostMapping
-    public ResponseEntity<ResponsavelListagemDTO> create(@Valid @RequestBody ResponsavelCadastroDTO dto) {
-        ResponsavelListagemDTO novoResponsavel = service.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoResponsavel);
+    public ResponseEntity<EntityModel<ResponsavelResponse>> criar(
+            @Valid @RequestBody ResponsavelRequest request) {
+        // TODO J2: migra para POST /api/auth/register (cria yp_t_usuarios na mesma transação)
+        var responsavel = assembler.toModel(service.criar(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(responsavel);
     }
 
     @Operation(summary = "Lista todos os responsáveis", responses = {
             @ApiResponse(responseCode = "200", description = "Responsáveis encontrados",
                     content = @Content(array = @ArraySchema(
-                            schema = @Schema(
-                                    implementation = ResponsavelListagemDTO.class))))
+                            schema = @Schema(implementation = ResponsavelResponse.class))))
     })
     @GetMapping
-    public ResponseEntity<List<ResponsavelListagemDTO>> read() {
-        List<ResponsavelListagemDTO> responsaveis = service.readAll();
-        return ResponseEntity.ok(responsaveis);
+    public ResponseEntity<List<EntityModel<ResponsavelResponse>>> listar() {
+        return ResponseEntity.ok(
+                service.listar().stream().map(assembler::toModel).toList());
     }
 
     @Operation(summary = "Busca um responsável pelo id", responses = {
             @ApiResponse(responseCode = "200", description = "Responsável encontrado",
-                    content = @Content(schema = @Schema(
-                            implementation = ResponsavelListagemDTO.class))),
+                    content = @Content(schema = @Schema(implementation = ResponsavelResponse.class))),
             @ApiResponse(responseCode = "404", description = "Responsável não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ResponsavelListagemDTO> readById(@PathVariable Long id) {
-        ResponsavelListagemDTO responsavel = service.readById(id);
-        return ResponseEntity.ok(responsavel);
+    public ResponseEntity<EntityModel<ResponsavelResponse>> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(assembler.toModel(service.buscarPorId(id)));
     }
 
     @Operation(summary = "Atualiza um responsável", responses = {
             @ApiResponse(responseCode = "200", description = "Responsável atualizado com sucesso",
-                    content = @Content(schema = @Schema(
-                            implementation = ResponsavelListagemDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Erro ao atualizar responsável"),
+                    content = @Content(schema = @Schema(implementation = ResponsavelResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de validação"),
             @ApiResponse(responseCode = "404", description = "Responsável não encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ResponsavelListagemDTO> update(@PathVariable Long id, @Valid @RequestBody ResponsavelAtualizarDTO dto) {
-        ResponsavelListagemDTO atualizado = service.update(id, dto);
-        return ResponseEntity.ok(atualizado);
+    public ResponseEntity<EntityModel<ResponsavelResponse>> atualizar(
+            @PathVariable Long id, @Valid @RequestBody ResponsavelRequest request) {
+        return ResponseEntity.ok(assembler.toModel(service.atualizar(id, request)));
     }
 
-    @Operation(summary = "Deleta um responsável", responses = {
-            @ApiResponse(responseCode = "204", description = "Responsável deletado com sucesso"),
+    @Operation(summary = "Remove um responsável", responses = {
+            @ApiResponse(responseCode = "204", description = "Responsável removido com sucesso"),
             @ApiResponse(responseCode = "404", description = "Responsável não encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> remover(@PathVariable Long id) {
+        service.remover(id);
         return ResponseEntity.noContent().build();
     }
 }

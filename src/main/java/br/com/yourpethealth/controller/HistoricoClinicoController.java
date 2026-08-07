@@ -1,6 +1,7 @@
 package br.com.yourpethealth.controller;
 
-import br.com.yourpethealth.dto.historico.HistoricoClinicoListagemDTO;
+import br.com.yourpethealth.assembler.HistoricoAssembler;
+import br.com.yourpethealth.dto.response.HistoricoResponse;
 import br.com.yourpethealth.service.HistoricoClinicoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -8,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,47 +18,32 @@ import java.util.List;
 
 @Tag(name = "Histórico Clínico")
 @RestController
-@RequestMapping("/historico")
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class HistoricoClinicoController {
 
     private final HistoricoClinicoService service;
-
-    public HistoricoClinicoController(HistoricoClinicoService service) {
-        this.service = service;
-    }
+    private final HistoricoAssembler assembler;
 
     @Operation(summary = "Lista o histórico clínico de um pet", responses = {
             @ApiResponse(responseCode = "200", description = "Histórico encontrado",
                     content = @Content(array = @ArraySchema(
-                            schema = @Schema(
-                                    implementation = HistoricoClinicoListagemDTO.class)))),
-            @ApiResponse(responseCode = "404", description = "Pet não encontrado")
+                            schema = @Schema(implementation = HistoricoResponse.class))))
     })
-    @GetMapping("/pet/{petId}")
-    public ResponseEntity<List<HistoricoClinicoListagemDTO>> readByPet(@PathVariable Long petId) {
-        List<HistoricoClinicoListagemDTO> historicos = service.readByPet(petId);
-        return ResponseEntity.ok(historicos);
+    @GetMapping("/pets/{petId}/historico")
+    public ResponseEntity<List<EntityModel<HistoricoResponse>>> listarPorPet(
+            @PathVariable Long petId) {
+        return ResponseEntity.ok(
+                service.listarPorPet(petId).stream().map(assembler::toModel).toList());
     }
 
     @Operation(summary = "Busca um item do histórico pelo id", responses = {
             @ApiResponse(responseCode = "200", description = "Histórico encontrado",
-                    content = @Content(schema = @Schema(
-                            implementation = HistoricoClinicoListagemDTO.class))),
+                    content = @Content(schema = @Schema(implementation = HistoricoResponse.class))),
             @ApiResponse(responseCode = "404", description = "Histórico não encontrado")
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<HistoricoClinicoListagemDTO> readById(@PathVariable Long id) {
-        HistoricoClinicoListagemDTO historico = service.readById(id);
-        return ResponseEntity.ok(historico);
-    }
-
-    @Operation(summary = "Deleta um item do histórico clínico", responses = {
-            @ApiResponse(responseCode = "204", description = "Histórico deletado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Histórico não encontrado")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/historico/{id}")
+    public ResponseEntity<EntityModel<HistoricoResponse>> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(assembler.toModel(service.buscarPorId(id)));
     }
 }

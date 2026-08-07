@@ -1,25 +1,27 @@
 package br.com.yourpethealth.service;
 
-import br.com.yourpethealth.dto.consulta.ConsultaAtualizarDTO;
-import br.com.yourpethealth.dto.consulta.ConsultaCadastroDTO;
-import br.com.yourpethealth.dto.consulta.ConsultaListagemDTO;
-import br.com.yourpethealth.entity.consulta.Consulta;
-import br.com.yourpethealth.entity.consulta.StatusConsulta;
-import br.com.yourpethealth.entity.historico.HistoricoClinico;
-import br.com.yourpethealth.entity.historico.TipoHistorico;
-import br.com.yourpethealth.entity.pet.Pet;
-import br.com.yourpethealth.entity.usuario.Veterinario;
+import br.com.yourpethealth.dto.request.ConsultaAtualizacaoRequest;
+import br.com.yourpethealth.dto.request.ConsultaConclusaoRequest;
+import br.com.yourpethealth.dto.request.ConsultaRequest;
+import br.com.yourpethealth.dto.response.ConsultaResponse;
+import br.com.yourpethealth.entity.Consulta;
+import br.com.yourpethealth.entity.HistoricoClinico;
+import br.com.yourpethealth.entity.enums.StatusConsulta;
+import br.com.yourpethealth.entity.enums.TipoHistorico;
 import br.com.yourpethealth.exception.IdNaoEncontradoException;
 import br.com.yourpethealth.repository.ConsultaRepository;
 import br.com.yourpethealth.repository.HistoricoClinicoRepository;
 import br.com.yourpethealth.repository.PetRepository;
 import br.com.yourpethealth.repository.VeterinarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ConsultaService {
 
     private final ConsultaRepository consultaRepository;
@@ -27,151 +29,87 @@ public class ConsultaService {
     private final VeterinarioRepository veterinarioRepository;
     private final HistoricoClinicoRepository historicoRepository;
 
-    public ConsultaService(ConsultaRepository consultaRepository, PetRepository petRepository,
-            VeterinarioRepository veterinarioRepository,
-            HistoricoClinicoRepository historicoRepository) {
-
-        this.consultaRepository = consultaRepository;
-        this.petRepository = petRepository;
-        this.veterinarioRepository = veterinarioRepository;
-        this.historicoRepository = historicoRepository;
-    }
-
     @Transactional
-    public ConsultaListagemDTO createConsulta(ConsultaCadastroDTO dto) {
-        Pet pet = petRepository.findById(dto.petId())
+    public ConsultaResponse criar(ConsultaRequest request) {
+        var pet = petRepository.findById(request.petId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
+        var veterinario = veterinarioRepository.findById(request.veterinarioId())
+                .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
 
-        Veterinario veterinario = veterinarioRepository.findById(dto.veterinarioId())
-                        .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
+        // TODO J4: as 5 regras de agendamento entram aqui
 
-        Consulta consulta = new Consulta();
-        consulta.setPet(pet);
-        consulta.setVeterinario(veterinario);
-        consulta.setTipo(dto.tipo());
-        consulta.setDescricao(dto.descricao());
-        consulta.setData(dto.data());
-        consulta.setObservacoes(dto.observacoes());
-        consulta.setStatus(dto.status());
-        Consulta salva = consultaRepository.save(consulta);
+        var consulta = Consulta.builder()
+                .pet(pet)
+                .veterinario(veterinario)
+                .tipo(request.tipo())
+                .descricao(request.descricao())
+                .data(request.data())
+                .status(StatusConsulta.AGENDADA)   // nunca vem do cliente
+                .build();
 
-        return new ConsultaListagemDTO(
-                salva.getId(),
-                salva.getPet().getId(),
-                salva.getVeterinario().getId(),
-                salva.getTipo(),
-                salva.getDescricao(),
-                salva.getData(),
-                salva.getObservacoes(),
-                salva.getStatus()
-        );
+        return ConsultaResponse.from(consultaRepository.save(consulta));
     }
 
     @Transactional(readOnly = true)
-    public List<ConsultaListagemDTO> readConsultasByPet(Long petId) {
+    public List<ConsultaResponse> listarPorPet(Long petId) {
         return consultaRepository.findByPetId(petId)
-                .stream()
-                .map(consulta -> new ConsultaListagemDTO(
-                        consulta.getId(),
-                        consulta.getPet().getId(),
-                        consulta.getVeterinario().getId(),
-                        consulta.getTipo(),
-                        consulta.getDescricao(),
-                        consulta.getData(),
-                        consulta.getObservacoes(),
-                        consulta.getStatus()
-                ))
-                .toList();
+                .stream().map(ConsultaResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public ConsultaListagemDTO readConsultaById(Long id) {
-        Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
-        return new ConsultaListagemDTO(
-                consulta.getId(),
-                consulta.getPet().getId(),
-                consulta.getVeterinario().getId(),
-                consulta.getTipo(),
-                consulta.getDescricao(),
-                consulta.getData(),
-                consulta.getObservacoes(),
-                consulta.getStatus()
-        );
-    }
-
-    @Transactional
-    public ConsultaListagemDTO updateConsulta(Long id, ConsultaAtualizarDTO dto) {
-        Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
-
-        consulta.setTipo(dto.tipo());
-        consulta.setDescricao(dto.descricao());
-        consulta.setData(dto.data());
-        consulta.setObservacoes(dto.observacoes());
-        consulta.setStatus(dto.status());
-        Consulta atualizada = consultaRepository.save(consulta);
-
-        return new ConsultaListagemDTO(
-                atualizada.getId(),
-                atualizada.getPet().getId(),
-                atualizada.getVeterinario().getId(),
-                atualizada.getTipo(),
-                atualizada.getDescricao(),
-                atualizada.getData(),
-                atualizada.getObservacoes(),
-                atualizada.getStatus()
-        );
-    }
-
-    @Transactional
-    public void deleteConsulta(Long id) {
-        Consulta consulta = consultaRepository.findById(id)
-                        .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
-        consultaRepository.delete(consulta);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ConsultaListagemDTO> readConsultasByVeterinario(Long veterinarioId) {
+    public List<ConsultaResponse> listarPorVeterinario(Long veterinarioId) {
         return consultaRepository.findByVeterinarioId(veterinarioId)
-                .stream()
-                .map(consulta -> new ConsultaListagemDTO(
-                        consulta.getId(),
-                        consulta.getPet().getId(),
-                        consulta.getVeterinario().getId(),
-                        consulta.getTipo(),
-                        consulta.getDescricao(),
-                        consulta.getData(),
-                        consulta.getObservacoes(),
-                        consulta.getStatus()
-                ))
-                .toList();
+                .stream().map(ConsultaResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ConsultaResponse buscarPorId(Long id) {
+        return ConsultaResponse.from(carregar(id));
     }
 
     @Transactional
-    public ConsultaListagemDTO concluirConsulta(Long id) {
-        Consulta consulta = consultaRepository.findById(id)
-                            .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
+    public ConsultaResponse atualizar(Long id, ConsultaAtualizacaoRequest request) {
+        var consulta = carregar(id);
 
-        consulta.setStatus(StatusConsulta.CONCLUIDA);
-        Consulta atualizada = consultaRepository.save(consulta);
+        consulta.setTipo(request.tipo());
+        consulta.setDescricao(request.descricao());
+        consulta.setData(request.data());
 
-        HistoricoClinico historico = new HistoricoClinico();
-        historico.setPet(consulta.getPet());
-        historico.setTipo(TipoHistorico.CONSULTA);
-        historico.setDescricao("Consulta realizada: " + consulta.getDescricao());
-        historico.setData(consulta.getData());
+        return ConsultaResponse.from(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaResponse cancelar(Long id) {
+        var consulta = carregar(id);
+        consulta.setStatus(StatusConsulta.CANCELADA);
+        return ConsultaResponse.from(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaResponse concluir(Long id, ConsultaConclusaoRequest request) {
+        var consulta = carregar(id);
+
+        consulta.setStatus(StatusConsulta.REALIZADA);
+        consulta.setObservacoes(request.observacoes());
+
+        var historico = HistoricoClinico.builder()
+                .pet(consulta.getPet())
+                .tipo(TipoHistorico.CONSULTA)
+                .descricao(request.observacoes())
+                .data(LocalDateTime.now())
+                .build();
         historicoRepository.save(historico);
 
-        return new ConsultaListagemDTO(
-                atualizada.getId(),
-                atualizada.getPet().getId(),
-                atualizada.getVeterinario().getId(),
-                atualizada.getTipo(),
-                atualizada.getDescricao(),
-                atualizada.getData(),
-                atualizada.getObservacoes(),
-                atualizada.getStatus()
-        );
+        return ConsultaResponse.from(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public void remover(Long id) {
+        consultaRepository.delete(carregar(id));
+    }
+
+    private Consulta carregar(Long id) {
+        return consultaRepository.findById(id)
+                .orElseThrow(() -> new IdNaoEncontradoException("Consulta não encontrada"));
     }
 }

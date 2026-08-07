@@ -1,8 +1,8 @@
 package br.com.yourpethealth.controller;
 
-import br.com.yourpethealth.dto.veterinario.VeterinarioAtualizarDTO;
-import br.com.yourpethealth.dto.veterinario.VeterinarioCadastroDTO;
-import br.com.yourpethealth.dto.veterinario.VeterinarioListagemDTO;
+import br.com.yourpethealth.assembler.VeterinarioAssembler;
+import br.com.yourpethealth.dto.request.VeterinarioRequest;
+import br.com.yourpethealth.dto.response.VeterinarioResponse;
 import br.com.yourpethealth.service.VeterinarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,71 +21,66 @@ import java.util.List;
 
 @Tag(name = "Veterinários")
 @RestController
-@RequestMapping("/veterinarios")
+@RequestMapping("/api/veterinarios")
+@RequiredArgsConstructor
 public class VeterinarioController {
 
     private final VeterinarioService service;
-
-    public VeterinarioController(VeterinarioService service) {
-        this.service = service;
-    }
+    private final VeterinarioAssembler assembler;
 
     @Operation(summary = "Cadastra um veterinário", responses = {
             @ApiResponse(responseCode = "201", description = "Veterinário cadastrado com sucesso",
-                    content = @Content(schema = @Schema(
-                            implementation = VeterinarioListagemDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Erro ao cadastrar veterinário")
+                    content = @Content(schema = @Schema(implementation = VeterinarioResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de validação")
     })
     @PostMapping
-    public ResponseEntity<VeterinarioListagemDTO> create(@Valid @RequestBody VeterinarioCadastroDTO dto) {
-        VeterinarioListagemDTO novoVeterinario = service.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoVeterinario);
+    public ResponseEntity<EntityModel<VeterinarioResponse>> criar(
+            @Valid @RequestBody VeterinarioRequest request) {
+        // TODO J2: migra para POST /api/auth/register (cria yp_t_usuarios na mesma transação)
+        var vet = assembler.toModel(service.criar(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(vet);
     }
 
     @Operation(summary = "Lista todos os veterinários", responses = {
             @ApiResponse(responseCode = "200", description = "Veterinários encontrados",
                     content = @Content(array = @ArraySchema(
-                            schema = @Schema(
-                                    implementation = VeterinarioListagemDTO.class))))
+                            schema = @Schema(implementation = VeterinarioResponse.class))))
     })
     @GetMapping
-    public ResponseEntity<List<VeterinarioListagemDTO>> read() {
-        List<VeterinarioListagemDTO> veterinarios = service.readAll();
-        return ResponseEntity.ok(veterinarios);
+    public ResponseEntity<List<EntityModel<VeterinarioResponse>>> listar() {
+        return ResponseEntity.ok(
+                service.listar().stream().map(assembler::toModel).toList());
     }
 
     @Operation(summary = "Busca um veterinário pelo id", responses = {
             @ApiResponse(responseCode = "200", description = "Veterinário encontrado",
-                    content = @Content(schema = @Schema(
-                            implementation = VeterinarioListagemDTO.class))),
+                    content = @Content(schema = @Schema(implementation = VeterinarioResponse.class))),
             @ApiResponse(responseCode = "404", description = "Veterinário não encontrado")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<VeterinarioListagemDTO> readById(@PathVariable Long id) {
-        VeterinarioListagemDTO veterinario = service.readById(id);
-        return ResponseEntity.ok(veterinario);
+    public ResponseEntity<EntityModel<VeterinarioResponse>> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(assembler.toModel(service.buscarPorId(id)));
     }
 
     @Operation(summary = "Atualiza um veterinário", responses = {
             @ApiResponse(responseCode = "200", description = "Veterinário atualizado com sucesso",
-                    content = @Content(schema = @Schema(
-                            implementation = VeterinarioListagemDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Erro ao atualizar veterinário"),
+                    content = @Content(schema = @Schema(implementation = VeterinarioResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de validação"),
             @ApiResponse(responseCode = "404", description = "Veterinário não encontrado")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<VeterinarioListagemDTO> update(@PathVariable Long id, @Valid @RequestBody VeterinarioAtualizarDTO dto) {
-        VeterinarioListagemDTO atualizado = service.update(id, dto);
-        return ResponseEntity.ok(atualizado);
+    public ResponseEntity<EntityModel<VeterinarioResponse>> atualizar(
+            @PathVariable Long id, @Valid @RequestBody VeterinarioRequest request) {
+        return ResponseEntity.ok(assembler.toModel(service.atualizar(id, request)));
     }
 
-    @Operation(summary = "Deleta um veterinário", responses = {
-            @ApiResponse(responseCode = "204", description = "Veterinário deletado com sucesso"),
+    @Operation(summary = "Remove um veterinário", responses = {
+            @ApiResponse(responseCode = "204", description = "Veterinário removido com sucesso"),
             @ApiResponse(responseCode = "404", description = "Veterinário não encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> remover(@PathVariable Long id) {
+        service.remover(id);
         return ResponseEntity.noContent().build();
     }
 }
