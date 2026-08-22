@@ -14,8 +14,11 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
 
     List<Consulta> findByPetId(Long petId);
 
-    List<Consulta> findByVeterinarioId(Long veterinarioId);
-    // ConsultaRepository
+    List<Consulta> findByPetResponsavelIdOrderByDataDesc(Long responsavelId);
+
+    List<Consulta> findByVeterinarioIdAndDataBetweenOrderByData(
+            Long veterinarioId, LocalDateTime inicio, LocalDateTime fim);
+
     long countByPetId(Long petId);
 
     Optional<Consulta> findFirstByPetIdAndStatusAndDataAfterOrderByDataAsc(

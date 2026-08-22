@@ -47,14 +47,12 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-
+                        .requestMatchers("/api/consultas/agenda").hasRole("VETERINARIO")
                         .requestMatchers(HttpMethod.PATCH, "/api/consultas/*/concluir")
                         .hasRole("VETERINARIO")
-                        .requestMatchers("/api/consultas/veterinario/**").hasRole("VETERINARIO")
-
+                        .requestMatchers("/api/pets/buscar").hasRole("VETERINARIO")
                         .requestMatchers(HttpMethod.POST, "/api/responsaveis").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/veterinarios").hasRole("ADMIN")
-
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e

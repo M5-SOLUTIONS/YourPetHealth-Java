@@ -28,11 +28,11 @@ public class PetController {
     private final PetService service;
     private final PetAssembler assembler;
 
-    @Operation(summary = "Cadastra um pet", responses = {
+    @Operation(summary = "Cadastra um pet para o responsável logado", responses = {
             @ApiResponse(responseCode = "201", description = "Pet cadastrado com sucesso",
                     content = @Content(schema = @Schema(implementation = PetResponse.class))),
             @ApiResponse(responseCode = "400", description = "Erro de validação"),
-            @ApiResponse(responseCode = "404", description = "Responsável não encontrado")
+            @ApiResponse(responseCode = "403", description = "Operação exclusiva de responsáveis")
     })
     @PostMapping
     public ResponseEntity<EntityModel<PetResponse>> criar(@Valid @RequestBody PetRequest request) {
@@ -40,21 +40,34 @@ public class PetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pet);
     }
 
-    @Operation(summary = "Lista todos os pets", responses = {
+    @Operation(summary = "Lista os pets do responsável logado", responses = {
             @ApiResponse(responseCode = "200", description = "Pets encontrados",
                     content = @Content(array = @ArraySchema(
-                            schema = @Schema(implementation = PetResponse.class))))
+                            schema = @Schema(implementation = PetResponse.class)))),
+            @ApiResponse(responseCode = "403", description = "Operação exclusiva de responsáveis")
     })
     @GetMapping
     public ResponseEntity<List<EntityModel<PetResponse>>> listar() {
-        // TODO J3: filtrar pelos pets do responsável logado
         return ResponseEntity.ok(
                 service.listar().stream().map(assembler::toModel).toList());
+    }
+
+    @Operation(summary = "Busca pets por nome (veterinário)", responses = {
+            @ApiResponse(responseCode = "200", description = "Pets encontrados",
+                    content = @Content(array = @ArraySchema(
+                            schema = @Schema(implementation = PetResponse.class)))),
+            @ApiResponse(responseCode = "403", description = "Operação exclusiva de veterinários")
+    })
+    @GetMapping("/buscar")
+    public ResponseEntity<List<EntityModel<PetResponse>>> buscar(@RequestParam String nome) {
+        return ResponseEntity.ok(
+                service.buscarPorNome(nome).stream().map(assembler::toModel).toList());
     }
 
     @Operation(summary = "Busca um pet pelo id", responses = {
             @ApiResponse(responseCode = "200", description = "Pet encontrado",
                     content = @Content(schema = @Schema(implementation = PetResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Pet de outro responsável"),
             @ApiResponse(responseCode = "404", description = "Pet não encontrado")
     })
     @GetMapping("/{id}")
@@ -62,24 +75,11 @@ public class PetController {
         return ResponseEntity.ok(assembler.toModel(service.buscarPorId(id)));
     }
 
-    @Operation(summary = "Lista pets de um responsável", responses = {
-            @ApiResponse(responseCode = "200", description = "Pets encontrados",
-                    content = @Content(array = @ArraySchema(
-                            schema = @Schema(implementation = PetResponse.class))))
-    })
-    @GetMapping("/responsavel/{responsavelId}")
-    public ResponseEntity<List<EntityModel<PetResponse>>> listarPorResponsavel(
-            @PathVariable Long responsavelId) {
-        // TODO J3: rota removida — GET /api/pets passa a fazer isso
-        return ResponseEntity.ok(
-                service.listarPorResponsavel(responsavelId).stream()
-                        .map(assembler::toModel).toList());
-    }
-
     @Operation(summary = "Atualiza um pet", responses = {
             @ApiResponse(responseCode = "200", description = "Pet atualizado com sucesso",
                     content = @Content(schema = @Schema(implementation = PetResponse.class))),
             @ApiResponse(responseCode = "400", description = "Erro de validação"),
+            @ApiResponse(responseCode = "403", description = "Pet de outro responsável"),
             @ApiResponse(responseCode = "404", description = "Pet não encontrado")
     })
     @PutMapping("/{id}")
@@ -90,6 +90,7 @@ public class PetController {
 
     @Operation(summary = "Remove um pet", responses = {
             @ApiResponse(responseCode = "204", description = "Pet removido com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Pet de outro responsável"),
             @ApiResponse(responseCode = "404", description = "Pet não encontrado"),
             @ApiResponse(responseCode = "409", description = "Pet possui consultas agendadas")
     })

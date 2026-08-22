@@ -11,4 +11,6 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     List<Pet> findByResponsavelId(Long responsavelId);
 
+    List<Pet> findByNomeContainingIgnoreCase(String nome);
+
 }

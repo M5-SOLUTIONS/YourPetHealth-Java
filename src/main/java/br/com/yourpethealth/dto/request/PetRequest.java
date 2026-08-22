@@ -6,10 +6,6 @@ import java.math.BigDecimal;
 
 public record PetRequest(
 
-        // TODO J3: remover — passa a vir do usuário logado
-        @NotNull(message = "Responsável é obrigatório")
-        Long responsavelId,
-
         @NotBlank(message = "Nome é obrigatório")
         @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
         String nome,

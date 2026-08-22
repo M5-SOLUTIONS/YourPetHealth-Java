@@ -28,7 +28,9 @@ public class HistoricoClinicoController {
     @Operation(summary = "Lista o histórico clínico de um pet", responses = {
             @ApiResponse(responseCode = "200", description = "Histórico encontrado",
                     content = @Content(array = @ArraySchema(
-                            schema = @Schema(implementation = HistoricoResponse.class))))
+                            schema = @Schema(implementation = HistoricoResponse.class)))),
+            @ApiResponse(responseCode = "403", description = "Pet de outro responsável"),
+            @ApiResponse(responseCode = "404", description = "Pet não encontrado")
     })
     @GetMapping("/pets/{petId}/historico")
     public ResponseEntity<List<EntityModel<HistoricoResponse>>> listarPorPet(
@@ -40,6 +42,7 @@ public class HistoricoClinicoController {
     @Operation(summary = "Busca um item do histórico pelo id", responses = {
             @ApiResponse(responseCode = "200", description = "Histórico encontrado",
                     content = @Content(schema = @Schema(implementation = HistoricoResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Histórico de pet de outro responsável"),
             @ApiResponse(responseCode = "404", description = "Histórico não encontrado")
     })
     @GetMapping("/historico/{id}")

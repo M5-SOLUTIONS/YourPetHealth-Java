@@ -23,8 +23,7 @@ public class ResponsavelAssembler
                 linkTo(methodOn(ResponsavelController.class)
                         .atualizar(resp.id(), null)).withRel("atualizar"),
                 linkTo(methodOn(ResponsavelController.class).remover(resp.id())).withRel("remover"),
-                linkTo(methodOn(PetController.class)
-                        .listarPorResponsavel(resp.id())).withRel("pets")
+                linkTo(methodOn(PetController.class).listar()).withRel("pets")
         );
     }
 }

@@ -113,6 +113,12 @@ public class GlobalExceptionHandler {
                 "Erro interno do servidor", req, null);
     }
 
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ApiErroResponse> acessoNegadoDominio(
+            AcessoNegadoException ex, HttpServletRequest req) {
+        return montar(HttpStatus.FORBIDDEN, "ACESSO_NEGADO", ex.getMessage(), req, null);
+    }
+
     private ResponseEntity<ApiErroResponse> montar(
             HttpStatus status, String codigo, String mensagem,
             HttpServletRequest req, List<ApiErroResponse.CampoErro> campos) {

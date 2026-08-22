@@ -25,7 +25,7 @@ public class ConsultaAssembler
         links.add(linkTo(methodOn(ConsultaController.class)
                 .buscarPorId(consulta.id())).withSelfRel());
         links.add(linkTo(methodOn(ConsultaController.class)
-                .listarPorPet(consulta.petId())).withRel("consultas"));
+                .listar()).withRel("consultas"));
         links.add(linkTo(methodOn(PetController.class)
                 .buscarPorId(consulta.petId())).withRel("pet"));
 

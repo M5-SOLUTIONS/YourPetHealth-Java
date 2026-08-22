@@ -24,9 +24,7 @@ public class PetAssembler
                 linkTo(methodOn(PetController.class).atualizar(pet.id(), null)).withRel("atualizar"),
                 linkTo(methodOn(PetController.class).remover(pet.id())).withRel("remover"),
                 linkTo(methodOn(HistoricoClinicoController.class)
-                        .listarPorPet(pet.id())).withRel("historico"),
-                linkTo(methodOn(ConsultaController.class)
-                        .listarPorPet(pet.id())).withRel("consultas")
+                        .listarPorPet(pet.id())).withRel("historico")
         );
     }
 }
