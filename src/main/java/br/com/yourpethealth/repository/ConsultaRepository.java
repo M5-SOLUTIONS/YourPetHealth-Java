@@ -25,4 +25,9 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
             Long petId, StatusConsulta status, LocalDateTime referencia);
 
     boolean existsByPetIdAndStatus(Long petId, StatusConsulta status);
+
+    List<Consulta> findByVeterinarioIdAndStatusAndDataBetween(Long veterinarioId, StatusConsulta status,
+                                                              LocalDateTime inicio, LocalDateTime fim);
+
+    List<Consulta> findByPetIdAndStatusAndData(Long petId, StatusConsulta status, LocalDateTime data);
 }

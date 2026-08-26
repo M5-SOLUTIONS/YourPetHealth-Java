@@ -34,6 +34,7 @@ public class ConsultaService {
     private final VeterinarioRepository veterinarioRepository;
     private final HistoricoClinicoRepository historicoRepository;
     private final UsuarioLogado usuarioLogado;
+    private final RegrasAgendamento regrasAgendamento;
 
     @Transactional
     public ConsultaResponse criar(ConsultaRequest request) {
@@ -42,7 +43,6 @@ public class ConsultaService {
         var pet = petRepository.findById(request.petId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
 
-        // Regra 1 das cinco: o pet precisa ser do responsável logado.
         if (!pet.getResponsavel().getId().equals(responsavelId)) {
             throw new AcessoNegadoException("Recurso não encontrado ou inacessível");
         }
@@ -50,7 +50,8 @@ public class ConsultaService {
         var veterinario = veterinarioRepository.findById(request.veterinarioId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
 
-        // TODO J4: regras 2 a 5 (antecedência, horário comercial, conflitos)
+        regrasAgendamento.validar(
+                pet.getId(), veterinario.getId(), request.data(), null);
 
         var consulta = Consulta.builder()
                 .pet(pet)
@@ -64,7 +65,6 @@ public class ConsultaService {
         return ConsultaResponse.from(consultaRepository.save(consulta));
     }
 
-    /** Consultas de todos os pets do responsável logado. */
     @Transactional(readOnly = true)
     public List<ConsultaResponse> listar() {
         return consultaRepository
@@ -72,7 +72,6 @@ public class ConsultaService {
                 .stream().map(ConsultaResponse::from).toList();
     }
 
-    /** Agenda do dia do veterinário logado. */
     @Transactional(readOnly = true)
     public List<ConsultaResponse> agenda(LocalDate data) {
         LocalDate dia = data != null ? data : LocalDate.now();
@@ -97,6 +96,12 @@ public class ConsultaService {
             throw new RegraNegocioException("Só é possível alterar consultas agendadas");
         }
 
+        regrasAgendamento.validar(
+                consulta.getPet().getId(),
+                consulta.getVeterinario().getId(),
+                request.data(),
+                consulta.getId());
+
         consulta.setTipo(request.tipo());
         consulta.setDescricao(request.descricao());
         consulta.setData(request.data());
@@ -120,7 +125,6 @@ public class ConsultaService {
     public ConsultaResponse concluir(Long id, ConsultaConclusaoRequest request) {
         var consulta = carregar(id);
 
-        // Um veterinário só conclui as próprias consultas.
         if (!consulta.getVeterinario().getId().equals(usuarioLogado.veterinarioId())) {
             throw new AcessoNegadoException("Recurso não encontrado ou inacessível");
         }
@@ -152,9 +156,6 @@ public class ConsultaService {
         consultaRepository.delete(consulta);
     }
 
-    // ---------- Acesso ----------
-
-    /** Leitura: o dono do pet ou o veterinário da consulta. */
     private Consulta carregarComLeitura(Long id) {
         var consulta = carregar(id);
 

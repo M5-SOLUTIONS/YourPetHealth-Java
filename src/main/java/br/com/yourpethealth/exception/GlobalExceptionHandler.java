@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RegraNegocioException.class)
     public ResponseEntity<ApiErroResponse> regraNegocio(
             RegraNegocioException ex, HttpServletRequest req) {
-        return montar(HttpStatus.CONFLICT, "REGRA_NEGOCIO", ex.getMessage(), req, null);
+        return montar(HttpStatus.CONFLICT, "CONFLITO", ex.getMessage(), req, null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -117,6 +117,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErroResponse> acessoNegadoDominio(
             AcessoNegadoException ex, HttpServletRequest req) {
         return montar(HttpStatus.FORBIDDEN, "ACESSO_NEGADO", ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(ValidacaoException.class)
+    public ResponseEntity<ApiErroResponse> validacaoDominio(
+            ValidacaoException ex, HttpServletRequest req) {
+        return montar(HttpStatus.BAD_REQUEST, "VALIDACAO", ex.getMessage(), req, null);
     }
 
     private ResponseEntity<ApiErroResponse> montar(

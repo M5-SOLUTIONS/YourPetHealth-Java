@@ -51,8 +51,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/consultas/*/concluir")
                         .hasRole("VETERINARIO")
                         .requestMatchers("/api/pets/buscar").hasRole("VETERINARIO")
-                        .requestMatchers(HttpMethod.POST, "/api/responsaveis").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/veterinarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/veterinarios/**").authenticated()
+                        .requestMatchers("/api/veterinarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/responsaveis/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e
