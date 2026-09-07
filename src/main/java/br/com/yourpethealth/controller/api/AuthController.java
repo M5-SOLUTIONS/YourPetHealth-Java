@@ -1,4 +1,4 @@
-package br.com.yourpethealth.controller;
+package br.com.yourpethealth.controller.api;
 
 import br.com.yourpethealth.dto.request.LoginRequest;
 import br.com.yourpethealth.dto.request.RegisterRequest;

@@ -1,4 +1,4 @@
-package br.com.yourpethealth.controller;
+package br.com.yourpethealth.controller.api;
 
 import br.com.yourpethealth.assembler.ConsultaAssembler;
 import br.com.yourpethealth.dto.request.ConsultaAtualizacaoRequest;

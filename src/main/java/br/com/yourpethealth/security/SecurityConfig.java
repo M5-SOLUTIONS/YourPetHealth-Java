@@ -1,5 +1,6 @@
 package br.com.yourpethealth.security;
 
+import br.com.yourpethealth.config.RedirectPorPerfilHandler;
 import br.com.yourpethealth.dto.response.ApiErroResponse;
 import br.com.yourpethealth.service.UsuarioDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    private final RedirectPorPerfilHandler redirectPorPerfilHandler;
 
     @Bean
     @Order(1)
@@ -67,13 +69,20 @@ public class SecurityConfig {
     SecurityFilterChain webChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers(
-                                "/", "/error",
+                        .requestMatchers("/login", "/cadastro", "/error",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/css/**", "/js/**", "/img/**").permitAll()
+                        .requestMatchers("/vet/**").hasRole("VETERINARIO")
+                        .requestMatchers("/app/**").hasRole("RESPONSAVEL")
                         .anyRequest().authenticated())
-                .formLogin(f -> f.permitAll())
-                .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/?logout"))
+                .formLogin(f -> f
+                        .loginPage("/login")
+                        .successHandler(redirectPorPerfilHandler)
+                        .permitAll())
+                .logout(l -> l
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout"))
+                .exceptionHandling(e -> e.accessDeniedPage("/403"))
                 .build();
     }
 

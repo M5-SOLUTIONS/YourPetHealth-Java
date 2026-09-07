@@ -1,4 +1,4 @@
-package br.com.yourpethealth.controller;
+package br.com.yourpethealth.controller.api;
 
 import br.com.yourpethealth.assembler.HistoricoAssembler;
 import br.com.yourpethealth.dto.response.HistoricoResponse;

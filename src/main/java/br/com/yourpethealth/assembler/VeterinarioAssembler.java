@@ -1,6 +1,6 @@
 package br.com.yourpethealth.assembler;
 
-import br.com.yourpethealth.controller.VeterinarioController;
+import br.com.yourpethealth.controller.api.VeterinarioController;
 import br.com.yourpethealth.dto.response.VeterinarioResponse;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
