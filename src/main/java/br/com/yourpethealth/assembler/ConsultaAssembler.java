@@ -1,7 +1,7 @@
 package br.com.yourpethealth.assembler;
 
-import br.com.yourpethealth.controller.ConsultaController;
-import br.com.yourpethealth.controller.PetController;
+import br.com.yourpethealth.controller.api.ConsultaController;
+import br.com.yourpethealth.controller.api.PetController;
 import br.com.yourpethealth.dto.response.ConsultaResponse;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -25,7 +25,7 @@ public class ConsultaAssembler
         links.add(linkTo(methodOn(ConsultaController.class)
                 .buscarPorId(consulta.id())).withSelfRel());
         links.add(linkTo(methodOn(ConsultaController.class)
-                .listarPorPet(consulta.petId())).withRel("consultas"));
+                .listar()).withRel("consultas"));
         links.add(linkTo(methodOn(PetController.class)
                 .buscarPorId(consulta.petId())).withRel("pet"));
 

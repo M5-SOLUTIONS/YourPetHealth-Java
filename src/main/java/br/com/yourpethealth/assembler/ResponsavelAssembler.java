@@ -1,7 +1,7 @@
 package br.com.yourpethealth.assembler;
 
-import br.com.yourpethealth.controller.PetController;
-import br.com.yourpethealth.controller.ResponsavelController;
+import br.com.yourpethealth.controller.api.PetController;
+import br.com.yourpethealth.controller.api.ResponsavelController;
 import br.com.yourpethealth.dto.response.ResponsavelResponse;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -23,8 +23,7 @@ public class ResponsavelAssembler
                 linkTo(methodOn(ResponsavelController.class)
                         .atualizar(resp.id(), null)).withRel("atualizar"),
                 linkTo(methodOn(ResponsavelController.class).remover(resp.id())).withRel("remover"),
-                linkTo(methodOn(PetController.class)
-                        .listarPorResponsavel(resp.id())).withRel("pets")
+                linkTo(methodOn(PetController.class).listar()).withRel("pets")
         );
     }
 }

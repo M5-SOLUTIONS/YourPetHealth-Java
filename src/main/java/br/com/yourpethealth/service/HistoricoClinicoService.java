@@ -14,17 +14,21 @@ import java.util.List;
 public class HistoricoClinicoService {
 
     private final HistoricoClinicoRepository repository;
+    private final PetService petService;
 
     @Transactional(readOnly = true)
     public List<HistoricoResponse> listarPorPet(Long petId) {
+        petService.carregarComLeitura(petId);   // valida acesso ao pet
         return repository.findByPetId(petId)
                 .stream().map(HistoricoResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public HistoricoResponse buscarPorId(Long id) {
-        return repository.findById(id)
-                .map(HistoricoResponse::from)
+        var historico = repository.findById(id)
                 .orElseThrow(() -> new IdNaoEncontradoException("Histórico clínico não encontrado"));
+
+        petService.carregarComLeitura(historico.getPet().getId());
+        return HistoricoResponse.from(historico);
     }
 }
