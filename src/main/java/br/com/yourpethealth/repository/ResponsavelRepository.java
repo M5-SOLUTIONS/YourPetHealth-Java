@@ -1,6 +1,6 @@
 package br.com.yourpethealth.repository;
 
-import br.com.yourpethealth.entity.usuario.Responsavel;
+import br.com.yourpethealth.entity.Responsavel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
