@@ -1,0 +1,660 @@
+{
+  "info": {
+    "_postman_id": "5636f566-8240-4bbc-a073-fd84eff8dfdb",
+    "name": "YourPetHealth",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53564630",
+    "_collection_link": "https://go.postman.co/collection/53564630-5636f566-8240-4bbc-a073-fd84eff8dfdb?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Responsavel",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Guilherme\",\r\n  \"email\": \"sla@email.com\",\r\n  \"senha\": \"123456\",\r\n  \"telefone\": \"11999999999\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/responsaveis",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "responsaveis"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/responsaveis",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "responsaveis"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Exibir1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/responsaveis/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "responsaveis",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Guilherme Silva\",\r\n  \"email\": \"guilherme@email.com\",\r\n  \"senha\": \"654321\",\r\n  \"telefone\": \"11988888888\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/responsaveis/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "responsaveis",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/responsaveis/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "responsaveis",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Veterinario",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Dr. Carlos Silva\",\r\n  \"email\": \"carlos@vet.com\",\r\n  \"senha\": \"123456\",\r\n  \"telefone\": \"11977777777\",\r\n  \"crmv\": \"CRMV-SP-12345\",\r\n  \"especialidade\": \"Cardiologia\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/veterinarios",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "veterinarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/veterinarios",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "veterinarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Exibir1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/veterinarios/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "veterinarios",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Dr. Carlos Henrique\",\r\n  \"email\": \"carloshenrique@vet.com\",\r\n  \"senha\": \"654321\",\r\n  \"telefone\": \"11966666666\",\r\n  \"crmv\": \"CRMV-SP-54321\",\r\n  \"especialidade\": \"Dermatologia\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/veterinarios/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "veterinarios",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/veterinarios/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "veterinarios",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pet",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"responsavelId\": 1,\r\n  \"nome\": \"Rex\",\r\n  \"raca\": \"Golden Retriever\",\r\n  \"idade\": 5,\r\n  \"peso\": 28.5,\r\n  \"sexo\": \"MACHO\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/pets",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/pets",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Exibir1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/pets/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ExibirPetsDeUmDeterminadoUsuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/pets/responsavel/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets",
+                "responsavel",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nome\": \"Rex Atualizado\",\r\n  \"raca\": \"Labrador\",\r\n  \"idade\": 6,\r\n  \"peso\": 30.0,\r\n  \"sexo\": \"MACHO\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/pets/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/pets/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "pets",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Consulta",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"petId\": 1,\r\n  \"veterinarioId\": 1,\r\n  \"tipo\": \"Rotina\",\r\n  \"descricao\": \"Consulta anual para avaliação geral\",\r\n  \"data\": \"2026-05-20\",\r\n  \"observacoes\": \"Pet saudável\",\r\n  \"status\": \"AGENDADA\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/consultas",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Exibir1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/consultas/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ExibirConsultaDeUmDetermiandoPet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/consultas/pet/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "pet",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ExibirConsultasDeUmDeterminadoVet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/consultas/veterinario/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "veterinario",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Put",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"veterinarioId\": 2,\r\n  \"tipo\": \"Retorno\",\r\n  \"descricao\": \"Retorno após tratamento\",\r\n  \"data\": \"2026-05-25\",\r\n  \"observacoes\": \"Melhora significativa\",\r\n  \"status\": \"CONCLUIDA\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/consultas/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ConcluirConsulta",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/consultas/1/concluir",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "1",
+                "concluir"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "localhost:8080/consultas/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "consultas",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "HistoricoClinico",
+      "item": [
+        {
+          "name": "Exibir1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/historico/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "historico",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ExibirPorPet",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/historico/pet/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "historico",
+                "pet",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/historico/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "historico",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 package br.com.yourpethealth.repository;
 
-import br.com.yourpethealth.entity.historico.HistoricoClinico;
+import br.com.yourpethealth.entity.HistoricoClinico;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

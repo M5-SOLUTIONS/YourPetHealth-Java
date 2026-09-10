@@ -1,126 +1,132 @@
 package br.com.yourpethealth.service;
 
-import br.com.yourpethealth.dto.pet.PetAtualizarDTO;
-import br.com.yourpethealth.dto.pet.PetCadastroDTO;
-import br.com.yourpethealth.dto.pet.PetListagemDTO;
-import br.com.yourpethealth.entity.pet.Pet;
-import br.com.yourpethealth.entity.usuario.Responsavel;
+import br.com.yourpethealth.dto.request.PetRequest;
+import br.com.yourpethealth.dto.response.PetResponse;
+import br.com.yourpethealth.entity.Consulta;
+import br.com.yourpethealth.entity.Pet;
+import br.com.yourpethealth.entity.enums.StatusConsulta;
+import br.com.yourpethealth.exception.AcessoNegadoException;
 import br.com.yourpethealth.exception.IdNaoEncontradoException;
+import br.com.yourpethealth.exception.RegraNegocioException;
+import br.com.yourpethealth.repository.ConsultaRepository;
 import br.com.yourpethealth.repository.PetRepository;
 import br.com.yourpethealth.repository.ResponsavelRepository;
+import br.com.yourpethealth.security.UsuarioLogado;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PetService {
 
     private final PetRepository petRepository;
     private final ResponsavelRepository responsavelRepository;
-
-    public PetService(PetRepository petRepository, ResponsavelRepository responsavelRepository) {
-        this.petRepository = petRepository;
-        this.responsavelRepository = responsavelRepository;
-    }
+    private final ConsultaRepository consultaRepository;
+    private final UsuarioLogado usuarioLogado;
 
     @Transactional
-    public PetListagemDTO createPet(PetCadastroDTO dto) {
-        Responsavel responsavel = responsavelRepository.findById(dto.responsavelId())
+    public PetResponse criar(PetRequest request) {
+        // O dono vem do token, nunca do corpo da requisição.
+        var responsavel = responsavelRepository.findById(usuarioLogado.responsavelId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Responsável não encontrado"));
 
-        Pet pet = new Pet();
-        pet.setResponsavel(responsavel);
-        pet.setNome(dto.nome());
-        pet.setRaca(dto.raca());
-        pet.setIdade(dto.idade());
-        pet.setPeso(dto.peso());
-        pet.setSexo(dto.sexo());
-        Pet salvo = petRepository.save(pet);
+        var pet = Pet.builder()
+                .responsavel(responsavel)
+                .nome(request.nome())
+                .raca(request.raca())
+                .idade(request.idade())
+                .peso(request.peso())
+                .sexoPet(request.sexo())
+                .build();
 
-        return new PetListagemDTO(
-                salvo.getId(),
-                salvo.getNome(),
-                salvo.getRaca(),
-                salvo.getIdade(),
-                salvo.getPeso(),
-                salvo.getSexo()
-        );
+        return toResponse(petRepository.save(pet));
+    }
+
+    /** Pets do responsável logado. */
+    @Transactional(readOnly = true)
+    public List<PetResponse> listar() {
+        return petRepository.findByResponsavelId(usuarioLogado.responsavelId())
+                .stream().map(this::toResponse).toList();
+    }
+
+    /** Busca por nome — exclusiva de veterinários. */
+    @Transactional(readOnly = true)
+    public List<PetResponse> buscarPorNome(String nome) {
+        usuarioLogado.veterinarioId();   // valida o perfil
+        return petRepository.findByNomeContainingIgnoreCase(nome)
+                .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<PetListagemDTO> readAllPets() {
-        return petRepository.findAll()
-                .stream()
-                .map(pet -> new PetListagemDTO(
-                        pet.getId(),
-                        pet.getNome(),
-                        pet.getRaca(),
-                        pet.getIdade(),
-                        pet.getPeso(),
-                        pet.getSexo()
-                ))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public PetListagemDTO readPetById(Long id) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
-
-        return new PetListagemDTO(
-                pet.getId(),
-                pet.getNome(),
-                pet.getRaca(),
-                pet.getIdade(),
-                pet.getPeso(),
-                pet.getSexo()
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public List<PetListagemDTO> readPetsByResponsavel(Long responsavelId) {
-        return petRepository.findByResponsavelId(responsavelId)
-                .stream()
-                .map(pet -> new PetListagemDTO(
-                        pet.getId(),
-                        pet.getNome(),
-                        pet.getRaca(),
-                        pet.getIdade(),
-                        pet.getPeso(),
-                        pet.getSexo()
-                ))
-                .toList();
+    public PetResponse buscarPorId(Long id) {
+        return toResponse(carregarComLeitura(id));
     }
 
     @Transactional
-    public PetListagemDTO updatePet(Long id, PetAtualizarDTO dto) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() ->
-                        new IdNaoEncontradoException("Pet não encontrado"));
+    public PetResponse atualizar(Long id, PetRequest request) {
+        var pet = carregarComPosse(id);
 
-        pet.setNome(dto.nome());
-        pet.setRaca(dto.raca());
-        pet.setIdade(dto.idade());
-        pet.setPeso(dto.peso());
-        pet.setSexo(dto.sexo());
-        Pet atualizado = petRepository.save(pet);
+        pet.setNome(request.nome());
+        pet.setRaca(request.raca());
+        pet.setIdade(request.idade());
+        pet.setPeso(request.peso());
+        pet.setSexoPet(request.sexo());
 
-        return new PetListagemDTO(
-                atualizado.getId(),
-                atualizado.getNome(),
-                atualizado.getRaca(),
-                atualizado.getIdade(),
-                atualizado.getPeso(),
-                atualizado.getSexo()
-        );
+        return toResponse(petRepository.save(pet));
     }
 
     @Transactional
-    public void deletePet(Long id) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
+    public void remover(Long id) {
+        var pet = carregarComPosse(id);
+
+        if (consultaRepository.existsByPetIdAndStatus(pet.getId(), StatusConsulta.AGENDADA)) {
+            throw new RegraNegocioException(
+                    "Não é possível remover um pet com consultas agendadas");
+        }
 
         petRepository.delete(pet);
+    }
+
+    // ---------- Acesso ----------
+
+    /** Leitura: o dono ou qualquer veterinário. */
+    Pet carregarComLeitura(Long id) {
+        var pet = carregar(id);
+        if (usuarioLogado.ehVeterinario()) return pet;
+
+        if (!pet.getResponsavel().getId().equals(usuarioLogado.responsavelId())) {
+            throw new AcessoNegadoException("Recurso não encontrado ou inacessível");
+        }
+        return pet;
+    }
+
+    /** Escrita: só o dono. */
+    private Pet carregarComPosse(Long id) {
+        var pet = carregar(id);
+        if (!pet.getResponsavel().getId().equals(usuarioLogado.responsavelId())) {
+            throw new AcessoNegadoException("Recurso não encontrado ou inacessível");
+        }
+        return pet;
+    }
+
+    private Pet carregar(Long id) {
+        return petRepository.findById(id)
+                .orElseThrow(() -> new IdNaoEncontradoException("Pet não encontrado"));
+    }
+
+    private PetResponse toResponse(Pet pet) {
+        long total = consultaRepository.countByPetId(pet.getId());
+
+        LocalDateTime proxima = consultaRepository
+                .findFirstByPetIdAndStatusAndDataAfterOrderByDataAsc(
+                        pet.getId(), StatusConsulta.AGENDADA, LocalDateTime.now())
+                .map(Consulta::getData)
+                .orElse(null);
+
+        return PetResponse.from(pet, total, proxima);
     }
 }
