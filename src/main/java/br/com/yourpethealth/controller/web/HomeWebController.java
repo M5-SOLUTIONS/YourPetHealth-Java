@@ -4,6 +4,7 @@ import br.com.yourpethealth.dto.response.ConsultaResponse;
 import br.com.yourpethealth.service.ConsultaService;
 import br.com.yourpethealth.service.PetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +16,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HomeWebController {
 
+    private static final String ROLE_VETERINARIO = "ROLE_VETERINARIO";
+
     private final PetService petService;
     private final ConsultaService consultaService;
 
     @GetMapping("/")
-    public String raiz() {
-        return "redirect:/app/home";
+    public String raiz(Authentication auth) {
+        return ehVeterinario(auth) ? "redirect:/vet/agenda" : "redirect:/app/home";
     }
 
     @GetMapping("/app/home")
@@ -28,7 +31,6 @@ public class HomeWebController {
         var pets = petService.listar();
         var consultas = consultaService.listar();
 
-        // Próximas 48h — derivado do que a API já devolve, sem endpoint novo.
         LocalDateTime agora = LocalDateTime.now();
         LocalDateTime limite = agora.plusHours(48);
 
@@ -42,5 +44,10 @@ public class HomeWebController {
         model.addAttribute("totalPets", pets.size());
         model.addAttribute("proximasConsultas", proximas);
         return "app/home";
+    }
+
+    private boolean ehVeterinario(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(ROLE_VETERINARIO));
     }
 }

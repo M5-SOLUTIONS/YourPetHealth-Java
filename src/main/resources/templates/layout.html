@@ -20,6 +20,16 @@
 
 <body>
 
+<div th:fragment="campo(id, rotulo, tipo)" class="mb-3">
+    <label th:for="${id}" class="form-label" th:text="${rotulo}"></label>
+    <input th:type="${tipo}" th:id="${id}"
+           th:field="*{__${id}__}"
+           class="form-control"
+           th:classappend="${#fields.hasErrors(id)} ? 'is-invalid'">
+    <div class="campo-erro" th:if="${#fields.hasErrors(id)}"
+         th:errors="*{__${id}__}"></div>
+</div>
+
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-yph mb-4">
     <div class="container">
 

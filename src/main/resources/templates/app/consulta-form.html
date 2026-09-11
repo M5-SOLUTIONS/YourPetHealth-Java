@@ -30,7 +30,6 @@
                                  : @{/app/consultas}"
                       th:object="${form}" method="post">
 
-                    <!-- As regras de agendamento recusadas pela API chegam aqui -->
                     <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
                         <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                     </div>
@@ -38,12 +37,14 @@
                     <div class="mb-3">
                         <label for="petId" class="form-label">Pet</label>
                         <select id="petId" th:field="*{petId}" class="form-select"
-                                th:disabled="${edicao}"
+                                th:attr="disabled=${edicao}? 'disabled'"
                                 th:classappend="${#fields.hasErrors('petId')} ? 'is-invalid'">
                             <option value="">Selecione</option>
                             <option th:each="p : ${pets}"
                                     th:value="${p.id}" th:text="${p.nome}"></option>
                         </select>
+                        <!-- Reenvia o valor mesmo com o select desabilitado -->
+                        <input type="hidden" th:if="${edicao}" th:field="*{petId}">
                         <div class="form-text" th:if="${edicao}">
                             O pet não pode ser alterado ao reagendar.
                         </div>
@@ -54,7 +55,7 @@
                     <div class="mb-3">
                         <label for="veterinarioId" class="form-label">Veterinário</label>
                         <select id="veterinarioId" th:field="*{veterinarioId}" class="form-select"
-                                th:disabled="${edicao}"
+                                th:attr="disabled=${edicao}? 'disabled'"
                                 th:classappend="${#fields.hasErrors('veterinarioId')} ? 'is-invalid'">
                             <option value="">Selecione</option>
                             <option th:each="v : ${veterinarios}"
@@ -62,6 +63,7 @@
                                     th:text="${v.nome} + (${v.especialidade}
                                              ? ' — ' + ${v.especialidade} : '')"></option>
                         </select>
+                        <input type="hidden" th:if="${edicao}" th:field="*{veterinarioId}">
                         <div class="form-text" th:if="${edicao}">
                             O veterinário não pode ser alterado ao reagendar.
                         </div>

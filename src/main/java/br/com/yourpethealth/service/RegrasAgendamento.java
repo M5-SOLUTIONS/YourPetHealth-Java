@@ -56,11 +56,11 @@ public class RegrasAgendamento {
         }
 
         int hora = data.getHour();
-        boolean forjaDoExpediente = hora < horaAbertura
+        boolean foraDoExpediente = hora < horaAbertura
                 || hora > horaFechamento
                 || (hora == horaFechamento && data.getMinute() > 0);
 
-        if (forjaDoExpediente) {
+        if (foraDoExpediente) {
             throw new ValidacaoException(
                     "O horário de atendimento é de %02d:00 às %02d:00, de segunda a sábado"
                             .formatted(horaAbertura, horaFechamento));
