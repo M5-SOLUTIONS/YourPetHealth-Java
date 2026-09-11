@@ -50,8 +50,7 @@ public class ConsultaService {
         var veterinario = veterinarioRepository.findById(request.veterinarioId())
                 .orElseThrow(() -> new IdNaoEncontradoException("Veterinário não encontrado"));
 
-        regrasAgendamento.validar(
-                pet.getId(), veterinario.getId(), request.data(), null);
+        regrasAgendamento.validar(pet.getId(), veterinario.getId(), request.data(), null);
 
         var consulta = Consulta.builder()
                 .pet(pet)

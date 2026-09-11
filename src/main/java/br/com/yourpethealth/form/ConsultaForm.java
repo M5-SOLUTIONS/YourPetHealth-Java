@@ -15,10 +15,8 @@ import java.time.LocalDateTime;
 @Setter
 public class ConsultaForm {
 
-    @NotNull(message = "Selecione um pet")
     private Long petId;
 
-    @NotNull(message = "Selecione um veterinário")
     private Long veterinarioId;
 
     @NotNull(message = "Tipo é obrigatório")
