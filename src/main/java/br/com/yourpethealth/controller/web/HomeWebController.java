@@ -4,6 +4,7 @@ import br.com.yourpethealth.dto.response.ConsultaResponse;
 import br.com.yourpethealth.service.ConsultaService;
 import br.com.yourpethealth.service.PetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,10 @@ public class HomeWebController {
 
     @GetMapping("/")
     public String raiz(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()
+                || auth instanceof AnonymousAuthenticationToken) {
+            return "redirect:/login";
+        }
         return ehVeterinario(auth) ? "redirect:/vet/agenda" : "redirect:/app/home";
     }
 
