@@ -17,16 +17,20 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice(basePackages = "br.com.yourpethealth.controller.api")
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    private final ErroResponseWriter erroWriter;
+
+    public GlobalExceptionHandler(ErroResponseWriter erroWriter) {
+        this.erroWriter = erroWriter;
+    }
 
     @ExceptionHandler(IdNaoEncontradoException.class)
     public ResponseEntity<ApiErroResponse> naoEncontrado(
@@ -38,6 +42,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErroResponse> regraNegocio(
             RegraNegocioException ex, HttpServletRequest req) {
         return montar(HttpStatus.CONFLICT, "CONFLITO", ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(ValidacaoException.class)
+    public ResponseEntity<ApiErroResponse> validacaoDominio(
+            ValidacaoException ex, HttpServletRequest req) {
+        return montar(HttpStatus.BAD_REQUEST, "VALIDACAO", ex.getMessage(), req, null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -68,9 +78,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({BadCredentialsException.class, DisabledException.class})
     public ResponseEntity<ApiErroResponse> credenciais(HttpServletRequest req) {
-        // Mensagem genérica: não revelar se o e-mail existe.
         return montar(HttpStatus.UNAUTHORIZED, "NAO_AUTORIZADO",
                 "E-mail ou senha inválidos", req, null);
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ApiErroResponse> acessoNegadoDominio(
+            AcessoNegadoException ex, HttpServletRequest req) {
+        return montar(HttpStatus.FORBIDDEN, "ACESSO_NEGADO", ex.getMessage(), req, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -108,30 +123,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErroResponse> generico(Exception ex, HttpServletRequest req) {
-        // Detalhe só no log: a mensagem pode conter nome de tabela, coluna ou SQL.
         log.error("Erro não tratado em {}", req.getRequestURI(), ex);
         return montar(HttpStatus.INTERNAL_SERVER_ERROR, "ERRO_INTERNO",
                 "Erro interno do servidor", req, null);
-    }
-
-    @ExceptionHandler(AcessoNegadoException.class)
-    public ResponseEntity<ApiErroResponse> acessoNegadoDominio(
-            AcessoNegadoException ex, HttpServletRequest req) {
-        return montar(HttpStatus.FORBIDDEN, "ACESSO_NEGADO", ex.getMessage(), req, null);
-    }
-
-    @ExceptionHandler(ValidacaoException.class)
-    public ResponseEntity<ApiErroResponse> validacaoDominio(
-            ValidacaoException ex, HttpServletRequest req) {
-        return montar(HttpStatus.BAD_REQUEST, "VALIDACAO", ex.getMessage(), req, null);
     }
 
     private ResponseEntity<ApiErroResponse> montar(
             HttpStatus status, String codigo, String mensagem,
             HttpServletRequest req, List<ApiErroResponse.CampoErro> campos) {
 
-        return ResponseEntity.status(status).body(new ApiErroResponse(
-                LocalDateTime.now(), status.value(), codigo,
-                mensagem, req.getRequestURI(), campos));
+        return ResponseEntity.status(status)
+                .body(erroWriter.montar(status, codigo, mensagem, req.getRequestURI(), campos));
     }
 }

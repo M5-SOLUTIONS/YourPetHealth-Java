@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,19 +26,6 @@ public class VeterinarioController {
 
     private final VeterinarioService service;
     private final VeterinarioAssembler assembler;
-
-    @Operation(summary = "Cadastra um veterinário", responses = {
-            @ApiResponse(responseCode = "201", description = "Veterinário cadastrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = VeterinarioResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Erro de validação")
-    })
-    @PostMapping
-    public ResponseEntity<EntityModel<VeterinarioResponse>> criar(
-            @Valid @RequestBody VeterinarioRequest request) {
-        // TODO J2: migra para POST /api/auth/register (cria yp_t_usuarios na mesma transação)
-        var vet = assembler.toModel(service.criar(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(vet);
-    }
 
     @Operation(summary = "Lista todos os veterinários", responses = {
             @ApiResponse(responseCode = "200", description = "Veterinários encontrados",

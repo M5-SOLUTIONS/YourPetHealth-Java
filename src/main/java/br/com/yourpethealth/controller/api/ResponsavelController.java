@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,19 +26,6 @@ public class ResponsavelController {
 
     private final ResponsavelService service;
     private final ResponsavelAssembler assembler;
-
-    @Operation(summary = "Cadastra um responsável", responses = {
-            @ApiResponse(responseCode = "201", description = "Responsável cadastrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = ResponsavelResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Erro de validação")
-    })
-    @PostMapping
-    public ResponseEntity<EntityModel<ResponsavelResponse>> criar(
-            @Valid @RequestBody ResponsavelRequest request) {
-        // TODO J2: migra para POST /api/auth/register (cria yp_t_usuarios na mesma transação)
-        var responsavel = assembler.toModel(service.criar(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(responsavel);
-    }
 
     @Operation(summary = "Lista todos os responsáveis", responses = {
             @ApiResponse(responseCode = "200", description = "Responsáveis encontrados",
