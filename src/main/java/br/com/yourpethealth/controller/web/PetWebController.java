@@ -51,20 +51,6 @@ public class PetWebController {
         return "redirect:/app/pets/" + pet.id();
     }
 
-    @GetMapping("/{id}")
-    public String detalhe(@PathVariable Long id, Model model) {
-        var pet = petService.buscarPorId(id);
-
-        // Não existe endpoint de consultas por pet — filtra a listagem do responsável.
-        var consultas = consultaService.listar().stream()
-                .filter(c -> c.petId().equals(id))
-                .toList();
-
-        model.addAttribute("pet", pet);
-        model.addAttribute("consultas", consultas);
-        return "app/pet-detalhe";
-    }
-
     @GetMapping("/{id}/editar")
     public String formularioEdicao(@PathVariable Long id, Model model) {
         model.addAttribute("form", PetForm.de(petService.buscarPorId(id)));

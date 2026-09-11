@@ -1,6 +1,9 @@
 package br.com.yourpethealth.controller.web;
 
 import br.com.yourpethealth.entity.enums.TipoConsulta;
+import br.com.yourpethealth.exception.AcessoNegadoException;
+import br.com.yourpethealth.exception.RegraNegocioException;
+import br.com.yourpethealth.exception.ValidacaoException;
 import br.com.yourpethealth.form.ConsultaForm;
 import br.com.yourpethealth.service.ConsultaService;
 import br.com.yourpethealth.service.PetService;
@@ -31,7 +34,7 @@ public class ConsultaWebController {
     @GetMapping("/nova")
     public String formularioNovo(@RequestParam(required = false) Long petId, Model model) {
         var form = new ConsultaForm();
-        form.setPetId(petId);   // pré-seleciona quando vem do detalhe do pet
+        form.setPetId(petId);
 
         model.addAttribute("form", form);
         model.addAttribute("edicao", false);
@@ -45,24 +48,8 @@ public class ConsultaWebController {
                           Model model,
                           RedirectAttributes flash) {
 
-        if (resultado.hasErrors()) {
-            model.addAttribute("edicao", false);
-            preencherSelects(model);
-            return "app/consulta-form";
-        }
-
-        try {
-            consultaService.criar(form.paraRequest());
-        } catch (RuntimeException e) {
-            // As 5 regras de agendamento chegam como exceção — vira erro do formulário.
-            resultado.reject("agendamento", e.getMessage());
-            model.addAttribute("edicao", false);
-            preencherSelects(model);
-            return "app/consulta-form";
-        }
-
-        flash.addFlashAttribute("sucesso", "Consulta agendada com sucesso.");
-        return "redirect:/app/consultas";
+        return salvar(null, form, resultado, model, flash,
+                () -> consultaService.criar(form.paraRequest()));
     }
 
     @GetMapping("/{id}/editar")
@@ -81,26 +68,8 @@ public class ConsultaWebController {
                             Model model,
                             RedirectAttributes flash) {
 
-        if (resultado.hasErrors()) {
-            model.addAttribute("consultaId", id);
-            model.addAttribute("edicao", true);
-            preencherSelects(model);
-            return "app/consulta-form";
-        }
-
-        try {
-            // Pet e veterinário não mudam no reagendamento — o request nem os carrega.
-            consultaService.atualizar(id, form.paraAtualizacao());
-        } catch (RuntimeException e) {
-            resultado.reject("agendamento", e.getMessage());
-            model.addAttribute("consultaId", id);
-            model.addAttribute("edicao", true);
-            preencherSelects(model);
-            return "app/consulta-form";
-        }
-
-        flash.addFlashAttribute("sucesso", "Consulta reagendada com sucesso.");
-        return "redirect:/app/consultas";
+        return salvar(id, form, resultado, model, flash,
+                () -> consultaService.atualizar(id, form.paraAtualizacao()));
     }
 
     @PostMapping("/{id}/cancelar")
@@ -115,6 +84,35 @@ public class ConsultaWebController {
         consultaService.remover(id);
         flash.addFlashAttribute("sucesso", "Consulta excluída.");
         return "redirect:/app/consultas";
+    }
+
+    private String salvar(Long id, ConsultaForm form, BindingResult resultado,
+                          Model model, RedirectAttributes flash, Runnable operacao) {
+
+        boolean edicao = id != null;
+
+        if (resultado.hasErrors()) {
+            prepararModelDoFormulario(model, id, edicao);
+            return "app/consulta-form";
+        }
+
+        try {
+            operacao.run();
+        } catch (ValidacaoException | RegraNegocioException | AcessoNegadoException e) {
+            resultado.reject("agendamento", e.getMessage());
+            prepararModelDoFormulario(model, id, edicao);
+            return "app/consulta-form";
+        }
+
+        flash.addFlashAttribute("sucesso",
+                edicao ? "Consulta reagendada com sucesso." : "Consulta agendada com sucesso.");
+        return "redirect:/app/consultas";
+    }
+
+    private void prepararModelDoFormulario(Model model, Long id, boolean edicao) {
+        if (edicao) model.addAttribute("consultaId", id);
+        model.addAttribute("edicao", edicao);
+        preencherSelects(model);
     }
 
     private void preencherSelects(Model model) {

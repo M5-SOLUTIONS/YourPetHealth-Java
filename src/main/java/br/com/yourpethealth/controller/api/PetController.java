@@ -47,8 +47,9 @@ public class PetController {
             @ApiResponse(responseCode = "403", description = "Operação exclusiva de responsáveis")
     })
     @GetMapping
-    public List<EntityModel<PetResponse>> listar() {
-        return service.listar().stream().map(assembler::toModel).toList();
+    public ResponseEntity<List<EntityModel<PetResponse>>> listar() {
+        return ResponseEntity.ok(
+                service.listar().stream().map(assembler::toModel).toList());
     }
 
     @Operation(summary = "Busca pets por nome (veterinário)", responses = {

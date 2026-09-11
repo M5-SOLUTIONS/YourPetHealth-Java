@@ -1,263 +1,284 @@
 {
   "info": {
-    "_postman_id": "5636f566-8240-4bbc-a073-fd84eff8dfdb",
     "name": "YourPetHealth",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "53564630",
-    "_collection_link": "https://go.postman.co/collection/53564630-5636f566-8240-4bbc-a073-fd84eff8dfdb?source=collection_link"
+    "description": "Coleção de testes da API YourPetHealth.\n\nCOMO USAR\n1. Suba a aplicação em http://localhost:8080\n2. Rode a pasta 'Autenticação' primeiro — ela cria os usuários e guarda os tokens\n3. Depois rode as demais pastas na ordem, ou a coleção inteira ('Run collection')\n\nA autenticação é automática: os tokens ficam em variáveis de coleção e todas as requisições já enviam o header Authorization.\n\nAs datas de agendamento são calculadas por script (próxima segunda-feira), então a coleção não fica desatualizada.\n\nATENÇÃO: rodar duas vezes falha no cadastro, porque os e-mails já existirão. Altere a variável 'sufixo' ou limpe as tabelas antes de repetir.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{tokenResponsavel}}" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "sufixo", "value": "" },
+    { "key": "tokenResponsavel", "value": "" },
+    { "key": "tokenOutroResponsavel", "value": "" },
+    { "key": "tokenVeterinario", "value": "" },
+    { "key": "petId", "value": "" },
+    { "key": "veterinarioId", "value": "" },
+    { "key": "consultaId", "value": "" },
+    { "key": "consultaCancelavelId", "value": "" },
+    { "key": "segunda", "value": "" },
+    { "key": "domingo", "value": "" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Calcula as datas de teste a partir de hoje, para a colecao nao",
+          "// depender de um calendario fixo.",
+          "function proximoDiaDaSemana(alvo) {",
+          "    const d = new Date();",
+          "    d.setHours(0, 0, 0, 0);",
+          "    let dias = (alvo - d.getDay() + 7) % 7;",
+          "    if (dias === 0) dias = 7;",
+          "    d.setDate(d.getDate() + dias);",
+          "    const mm = String(d.getMonth() + 1).padStart(2, '0');",
+          "    const dd = String(d.getDate()).padStart(2, '0');",
+          "    return `${d.getFullYear()}-${mm}-${dd}`;",
+          "}",
+          "",
+          "pm.collectionVariables.set('segunda', proximoDiaDaSemana(1));",
+          "pm.collectionVariables.set('domingo', proximoDiaDaSemana(0));"
+        ]
+      }
+    }
+  ],
   "item": [
     {
-      "name": "Responsavel",
+      "name": "Autenticação",
       "item": [
         {
-          "name": "Create",
+          "name": "RegistrarResponsavel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenResponsavel', json.token);",
+                  "pm.test('devolve token', () => pm.expect(json.token).to.be.a('string'));",
+                  "pm.test('perfil RESPONSAVEL', () => pm.expect(json.usuario.perfil).to.eql('RESPONSAVEL'));",
+                  "pm.test('responsavelId preenchido', () => pm.expect(json.usuario.responsavelId).to.not.be.null);",
+                  "pm.test('veterinarioId nulo', () => pm.expect(json.usuario.veterinarioId).to.be.null);"
+                ]
+              }
+            }
+          ],
           "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Guilherme\",\r\n  \"email\": \"sla@email.com\",\r\n  \"senha\": \"123456\",\r\n  \"telefone\": \"11999999999\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+              "raw": "{\n  \"nome\": \"Guilherme Souza\",\n  \"email\": \"guilherme{{sufixo}}@email.com\",\n  \"senha\": \"senhaforte\",\n  \"telefone\": \"11999999999\",\n  \"perfil\": \"RESPONSAVEL\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "RegistrarOutroResponsavel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('tokenOutroResponsavel', pm.response.json().token);",
+                  "// Usado nos testes de isolamento entre tutores."
+                ]
               }
-            },
-            "url": {
-              "raw": "localhost:8080/responsaveis",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "responsaveis"
-              ]
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Listar",
+          ],
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/responsaveis",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "responsaveis"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Exibir1",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/responsaveis/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "responsaveis",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Guilherme Silva\",\r\n  \"email\": \"guilherme@email.com\",\r\n  \"senha\": \"654321\",\r\n  \"telefone\": \"11988888888\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "localhost:8080/responsaveis/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "responsaveis",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/responsaveis/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "responsaveis",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Veterinario",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Dr. Carlos Silva\",\r\n  \"email\": \"carlos@vet.com\",\r\n  \"senha\": \"123456\",\r\n  \"telefone\": \"11977777777\",\r\n  \"crmv\": \"CRMV-SP-12345\",\r\n  \"especialidade\": \"Cardiologia\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"nome\": \"Beatriz Lima\",\n  \"email\": \"beatriz{{sufixo}}@email.com\",\n  \"senha\": \"senhaforte\",\n  \"telefone\": \"11988888888\",\n  \"perfil\": \"RESPONSAVEL\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/veterinarios",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "veterinarios"
-              ]
-            }
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
         },
         {
-          "name": "Listar",
+          "name": "RegistrarVeterinario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenVeterinario', json.token);",
+                  "pm.collectionVariables.set('veterinarioId', json.usuario.veterinarioId);",
+                  "pm.test('perfil VETERINARIO', () => pm.expect(json.usuario.perfil).to.eql('VETERINARIO'));",
+                  "pm.test('veterinarioId preenchido', () => pm.expect(json.usuario.veterinarioId).to.not.be.null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Carlos Silva\",\n  \"email\": \"carlos{{sufixo}}@vet.com\",\n  \"senha\": \"senhaforte\",\n  \"telefone\": \"11977777777\",\n  \"perfil\": \"VETERINARIO\",\n  \"crmv\": \"CRMV-SP-{{$randomInt}}\",\n  \"especialidade\": \"Cardiologia\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('tokenResponsavel', json.token);",
+                  "pm.test('tipo Bearer', () => pm.expect(json.tipo).to.eql('Bearer'));",
+                  "pm.test('data sem casas decimais', () => {",
+                  "    pm.expect(json.expiraEm).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$/);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"guilherme{{sufixo}}@email.com\",\n  \"senha\": \"senhaforte\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "LoginSenhaErrada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('erro NAO_AUTORIZADO', () => pm.expect(pm.response.json().erro).to.eql('NAO_AUTORIZADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"guilherme{{sufixo}}@email.com\",\n  \"senha\": \"errada\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "EmailDuplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+                  "// A checagem de duplicidade e feita em yp_t_usuarios."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Outro Guilherme\",\n  \"email\": \"guilherme{{sufixo}}@email.com\",\n  \"senha\": \"senhaforte\",\n  \"perfil\": \"RESPONSAVEL\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "VeterinarioSemCrmv",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Vet Sem Crmv\",\n  \"email\": \"semcrmv{{sufixo}}@vet.com\",\n  \"senha\": \"senhaforte\",\n  \"perfil\": \"VETERINARIO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "UsuarioAutenticado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('devolve o usuario logado', () => {",
+                  "    pm.expect(pm.response.json().nome).to.include('Guilherme');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/veterinarios",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "veterinarios"
-              ]
-            }
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
         },
         {
-          "name": "Exibir1",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/veterinarios/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "veterinarios",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Put",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Dr. Carlos Henrique\",\r\n  \"email\": \"carloshenrique@vet.com\",\r\n  \"senha\": \"654321\",\r\n  \"telefone\": \"11966666666\",\r\n  \"crmv\": \"CRMV-SP-54321\",\r\n  \"especialidade\": \"Dermatologia\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+          "name": "SemToken",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('responde JSON, nao HTML', () => {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('json');",
+                  "});"
+                ]
               }
-            },
-            "url": {
-              "raw": "localhost:8080/veterinarios/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "veterinarios",
-                "1"
-              ]
             }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
+          ],
           "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/veterinarios/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "veterinarios",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
         }
       ]
     },
@@ -266,145 +287,178 @@
       "item": [
         {
           "name": "Create",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('petId', json.id);",
+                  "pm.test('dono derivado do token', () => pm.expect(json.responsavelNome).to.include('Guilherme'));",
+                  "pm.test('sem consultas ainda', () => pm.expect(json.totalConsultas).to.eql(0));",
+                  "pm.test('proximaConsulta nula', () => pm.expect(json.proximaConsulta).to.be.null);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"responsavelId\": 1,\r\n  \"nome\": \"Rex\",\r\n  \"raca\": \"Golden Retriever\",\r\n  \"idade\": 5,\r\n  \"peso\": 28.5,\r\n  \"sexo\": \"MACHO\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"nome\": \"Rex\",\n  \"raca\": \"Golden Retriever\",\n  \"idade\": 5,\n  \"peso\": 28.5,\n  \"sexo\": \"MACHO\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/pets",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets"
-              ]
-            }
-          },
-          "response": []
+            "description": "O responsavelId nao vai mais no corpo: o dono e derivado do token.",
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
         },
         {
           "name": "Listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('array na raiz', () => pm.expect(json).to.be.an('array'));",
+                  "pm.test('sem _embedded', () => pm.expect(json._embedded).to.be.undefined);",
+                  "pm.test('so os pets do tutor logado', () => pm.expect(json.length).to.eql(1));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/pets",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets"
-              ]
-            }
-          },
-          "response": []
+            "description": "Devolve apenas os pets do responsavel autenticado.",
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
         },
         {
           "name": "Exibir1",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('e o Rex', () => pm.expect(pm.response.json().nome).to.eql('Rex'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/pets/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}"] }
+          }
         },
         {
-          "name": "ExibirPetsDeUmDeterminadoUsuario",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/pets/responsavel/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets",
-                "responsavel",
-                "1"
-              ]
+          "name": "BuscarPorNome (veterinário)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('encontra o Rex', () => pm.expect(pm.response.json().length).to.be.above(0));"
+                ]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "GET",
+            "description": "Rota exclusiva de veterinarios.",
+            "url": {
+              "raw": "{{baseUrl}}/api/pets/buscar?nome=Rex",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pets", "buscar"],
+              "query": [{ "key": "nome", "value": "Rex" }]
+            }
+          }
         },
         {
           "name": "Put",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('nome atualizado', () => pm.expect(pm.response.json().nome).to.eql('Rex Atualizado'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"nome\": \"Rex Atualizado\",\r\n  \"raca\": \"Labrador\",\r\n  \"idade\": 6,\r\n  \"peso\": 30.0,\r\n  \"sexo\": \"MACHO\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"nome\": \"Rex Atualizado\",\n  \"raca\": \"Labrador\",\n  \"idade\": 6,\n  \"peso\": 30.0,\n  \"sexo\": \"MACHO\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/pets/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}"] }
+          }
         },
         {
-          "name": "Delete",
+          "name": "ValidacaoEnumInvalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request — nao 500', () => pm.response.to.have.status(400));",
+                  "pm.test('erro VALIDACAO', () => pm.expect(pm.response.json().erro).to.eql('VALIDACAO'));"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "DELETE",
-            "header": [],
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": ""
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"idade\": 5,\n  \"sexo\": \"MASCULINO\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/pets/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "pets",
-                "1"
-              ]
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
+        },
+        {
+          "name": "ValidacaoCamposInvalidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+                  "const json = pm.response.json();",
+                  "pm.test('array campos preenchido', () => pm.expect(json.campos).to.be.an('array'));",
+                  "pm.test('aponta nome e peso', () => {",
+                  "    const campos = json.campos.map(c => c.campo);",
+                  "    pm.expect(campos).to.include('nome');",
+                  "    pm.expect(campos).to.include('peso');",
+                  "});"
+                ]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"A\",\n  \"idade\": 5,\n  \"peso\": 500,\n  \"sexo\": \"MACHO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
         }
       ]
     },
@@ -413,168 +467,369 @@
       "item": [
         {
           "name": "Create",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('consultaId', json.id);",
+                  "pm.test('nasce AGENDADA', () => pm.expect(json.status).to.eql('AGENDADA'));",
+                  "pm.test('podeEditar true', () => pm.expect(json.podeEditar).to.be.true);",
+                  "pm.test('observacoes vazias', () => pm.expect(json.observacoes).to.be.null);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"petId\": 1,\r\n  \"veterinarioId\": 1,\r\n  \"tipo\": \"Rotina\",\r\n  \"descricao\": \"Consulta anual para avaliação geral\",\r\n  \"data\": \"2026-05-20\",\r\n  \"observacoes\": \"Pet saudável\",\r\n  \"status\": \"AGENDADA\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Consulta anual para avaliacao geral\",\n  \"data\": \"{{segunda}}T14:30:00\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/consultas",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas"
-              ]
-            }
-          },
-          "response": []
+            "description": "O status nao vai no corpo: toda consulta nasce AGENDADA.\nO tipo agora e enum em maiusculas.",
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
         },
         {
           "name": "Exibir1",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('data em ISO sem timezone', () => {",
+                  "    pm.expect(pm.response.json().data).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$/);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "localhost:8080/consultas/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}"] }
+          }
         },
         {
-          "name": "ExibirConsultaDeUmDetermiandoPet",
+          "name": "Listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('array na raiz', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/consultas/pet/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "pet",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "description": "Consultas de todos os pets do responsavel logado.\nSubstitui a antiga rota /consultas/pet/{petId}.",
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
         },
         {
-          "name": "ExibirConsultasDeUmDeterminadoVet",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/consultas/veterinario/1",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "veterinario",
-                "1"
-              ]
+          "name": "Agenda (veterinário)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('tem consulta no dia', () => pm.expect(pm.response.json().length).to.be.above(0));"
+                ]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "GET",
+            "description": "Agenda do veterinario logado.\nSubstitui a antiga rota /consultas/veterinario/{id}.",
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas/agenda?data={{segunda}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "consultas", "agenda"],
+              "query": [{ "key": "data", "value": "{{segunda}}" }]
+            }
+          }
         },
         {
           "name": "Put",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('tipo atualizado', () => pm.expect(pm.response.json().tipo).to.eql('RETORNO'));",
+                  "pm.test('nao conflita consigo mesma', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "header": [],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"veterinarioId\": 2,\r\n  \"tipo\": \"Retorno\",\r\n  \"descricao\": \"Retorno após tratamento\",\r\n  \"data\": \"2026-05-25\",\r\n  \"observacoes\": \"Melhora significativa\",\r\n  \"status\": \"CONCLUIDA\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"tipo\": \"RETORNO\",\n  \"descricao\": \"Retorno apos tratamento\",\n  \"data\": \"{{segunda}}T14:30:00\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/consultas/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "description": "Reagendar nao aceita petId nem veterinarioId: a consulta nao muda de pet nem de profissional.\nAs 5 regras de agendamento sao revalidadas.",
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}"] }
+          }
         },
         {
           "name": "ConcluirConsulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('status REALIZADA — nao CONCLUIDA', () => pm.expect(json.status).to.eql('REALIZADA'));",
+                  "pm.test('observacoes gravadas', () => pm.expect(json.observacoes).to.include('saudavel'));",
+                  "pm.test('podeEditar virou false', () => pm.expect(json.podeEditar).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacoes\": \"Pet saudavel. Retorno em 6 meses.\"\n}"
+            },
+            "description": "Exclusivo do veterinario da consulta. As observacoes sao obrigatorias (minimo 10 caracteres) e viram o registro do historico clinico.",
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}", "concluir"] }
+          }
+        },
+        {
+          "name": "CriarSegundaConsulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('consultaCancelavelId', pm.response.json().id);",
+                  "// Usada nos testes de cancelamento e exclusao."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"VACINACAO\",\n  \"descricao\": \"Vacina anual\",\n  \"data\": \"{{segunda}}T16:00:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
+        },
+        {
+          "name": "CancelarConsulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('status CANCELADA', () => pm.expect(pm.response.json().status).to.eql('CANCELADA'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "localhost:8080/consultas/1/concluir",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "1",
-                "concluir"
-              ]
-            }
-          },
-          "response": []
+            "description": "Mantem o registro com status CANCELADA. Diferente do DELETE, que apaga a linha.",
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaCancelavelId}}/cancelar", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaCancelavelId}}", "cancelar"] }
+          }
         },
         {
           "name": "Delete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 — consulta ja cancelada nao pode ser excluida', () => {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "// Apenas consultas AGENDADAS podem ser excluidas."
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
-            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaCancelavelId}}", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaCancelavelId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RegrasDeAgendamento",
+      "item": [
+        {
+          "name": "Regra2_AntecedenciaMinima",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Agora + 30 minutos viola a antecedencia minima de 2 horas.",
+                  "const d = new Date(Date.now() + 30 * 60 * 1000);",
+                  "const iso = d.getFullYear()",
+                  "    + '-' + String(d.getMonth() + 1).padStart(2, '0')",
+                  "    + '-' + String(d.getDate()).padStart(2, '0')",
+                  "    + 'T' + String(d.getHours()).padStart(2, '0')",
+                  "    + ':' + String(d.getMinutes()).padStart(2, '0')",
+                  "    + ':00';",
+                  "pm.variables.set('daquiPouco', iso);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('erro VALIDACAO', () => pm.expect(pm.response.json().erro).to.eql('VALIDACAO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": ""
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Antecedencia insuficiente\",\n  \"data\": \"{{daquiPouco}}\"\n}"
             },
-            "url": {
-              "raw": "localhost:8080/consultas/1",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "consultas",
-                "1"
-              ]
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
+        },
+        {
+          "name": "Regra3_Domingo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('erro VALIDACAO', () => pm.expect(pm.response.json().erro).to.eql('VALIDACAO'));",
+                  "pm.test('menciona domingo', () => {",
+                  "    pm.expect(pm.response.json().mensagem.toLowerCase()).to.include('domingo');",
+                  "});"
+                ]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Tentativa no domingo\",\n  \"data\": \"{{domingo}}T14:30:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
+        },
+        {
+          "name": "Regra3_ForaDoExpediente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('menciona o horario de atendimento', () => {",
+                  "    pm.expect(pm.response.json().mensagem.toLowerCase()).to.include('atendimento');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Tres da manha\",\n  \"data\": \"{{segunda}}T03:00:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
+        },
+        {
+          "name": "Regra4_VeterinarioOcupado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('erro CONFLITO', () => pm.expect(pm.response.json().erro).to.eql('CONFLITO'));",
+                  "// 14:45 cai dentro da janela de 1 hora da consulta das 14:30."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"EXAME\",\n  \"descricao\": \"Dentro da janela de conflito\",\n  \"data\": \"{{segunda}}T14:45:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
+        },
+        {
+          "name": "Regra1_PetDeOutroTutor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "pm.test('erro ACESSO_NEGADO', () => pm.expect(pm.response.json().erro).to.eql('ACESSO_NEGADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenOutroResponsavel}}" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"petId\": {{petId}},\n  \"veterinarioId\": {{veterinarioId}},\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Pet de outro tutor\",\n  \"data\": \"{{segunda}}T10:00:00\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas", "host": ["{{baseUrl}}"], "path": ["api", "consultas"] }
+          }
         }
       ]
     },
@@ -582,77 +837,476 @@
       "name": "HistoricoClinico",
       "item": [
         {
-          "name": "Exibir1",
+          "name": "ExibirPorPet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('registro gerado pela conclusao', () => pm.expect(json.length).to.eql(1));",
+                  "pm.test('tipo CONSULTA', () => pm.expect(json[0].tipo).to.eql('CONSULTA'));",
+                  "pm.test('descricao vem das observacoes do vet', () => {",
+                  "    pm.expect(json[0].descricao).to.include('saudavel');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/historico/1",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "historico",
-                "1"
-              ]
-            }
-          },
-          "response": []
+            "description": "Substitui a antiga rota /historico/pet/{petId}.\nOs registros nascem automaticamente ao concluir uma consulta.",
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}/historico", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}", "historico"] }
+          }
         },
         {
-          "name": "ExibirPorPet",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+          "name": "Exibir1",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Busca o id do primeiro registro do historico do pet.",
+                  "const req = {",
+                  "    url: pm.collectionVariables.get('baseUrl')",
+                  "         + '/api/pets/' + pm.collectionVariables.get('petId') + '/historico',",
+                  "    method: 'GET',",
+                  "    header: {",
+                  "        Authorization: 'Bearer ' + pm.collectionVariables.get('tokenResponsavel')",
+                  "    }",
+                  "};",
+                  "pm.sendRequest(req, (err, res) => {",
+                  "    if (!err && res.json().length > 0) {",
+                  "        pm.collectionVariables.set('historicoId', res.json()[0].id);",
+                  "    }",
+                  "});"
+                ]
               }
             },
-            "url": {
-              "raw": "http://localhost:8080/historico/pet/1",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "historico",
-                "pet",
-                "1"
-              ]
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/historico/{{historicoId}}", "host": ["{{baseUrl}}"], "path": ["api", "historico", "{{historicoId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Veterinario",
+      "item": [
+        {
+          "name": "Listar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('acessivel a qualquer autenticado', () => {",
+                  "    pm.expect(pm.response.json().length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "description": "Leitura liberada para qualquer usuario autenticado — o app usa no seletor de agendamento.",
+            "url": { "raw": "{{baseUrl}}/api/veterinarios", "host": ["{{baseUrl}}"], "path": ["api", "veterinarios"] }
+          }
         },
         {
-          "name": "Delete",
+          "name": "Exibir1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/veterinarios/{{veterinarioId}}", "host": ["{{baseUrl}}"], "path": ["api", "veterinarios", "{{veterinarioId}}"] }
+          }
+        },
+        {
+          "name": "Put (somente ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "// Escrita em veterinarios exige perfil ADMIN.",
+                  "// O cadastro de veterinarios e feito por /api/auth/register."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Carlos Henrique\",\n  \"email\": \"carloshenrique{{sufixo}}@vet.com\",\n  \"telefone\": \"11966666666\",\n  \"crmv\": \"CRMV-SP-54321\",\n  \"especialidade\": \"Dermatologia\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/veterinarios/{{veterinarioId}}", "host": ["{{baseUrl}}"], "path": ["api", "veterinarios", "{{veterinarioId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Responsavel",
+      "item": [
+        {
+          "name": "Listar (somente ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "// Todas as rotas de /api/responsaveis exigem perfil ADMIN.",
+                  "// O tutor consulta os proprios dados por /api/auth/me."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/responsaveis", "host": ["{{baseUrl}}"], "path": ["api", "responsaveis"] }
+          }
+        },
+        {
+          "name": "Delete (somente ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "// Um tutor nao consegue excluir o cadastro de ninguem."
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:8080/historico/1",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "8080",
-              "path": [
-                "historico",
-                "1"
-              ]
+            "url": { "raw": "{{baseUrl}}/api/responsaveis/1", "host": ["{{baseUrl}}"], "path": ["api", "responsaveis", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Segurança",
+      "description": "Testes que comprovam o isolamento de dados e a separação por perfil. São os cenários usados nos prints da documentação.",
+      "item": [
+        {
+          "name": "OutroTutorNaoVeOPet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "pm.test('erro ACESSO_NEGADO', () => pm.expect(pm.response.json().erro).to.eql('ACESSO_NEGADO'));",
+                  "pm.test('mensagem nao confirma se o recurso existe', () => {",
+                  "    pm.expect(pm.response.json().mensagem.toLowerCase()).to.include('inacess');",
+                  "});"
+                ]
+              }
             }
-          },
-          "response": []
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenOutroResponsavel}}" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}"] }
+          }
+        },
+        {
+          "name": "OutroTutorNaoEditaOPet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenOutroResponsavel}}" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Roubado\",\n  \"idade\": 1,\n  \"sexo\": \"MACHO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}"] }
+          }
+        },
+        {
+          "name": "OutroTutorListaVazia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('nao ve pets de outro tutor', () => pm.expect(pm.response.json().length).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenOutroResponsavel}}" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
+        },
+        {
+          "name": "TutorNaoConcluiConsulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "pm.test('erro ACESSO_NEGADO', () => pm.expect(pm.response.json().erro).to.eql('ACESSO_NEGADO'));",
+                  "pm.test('responde JSON', () => {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacoes\": \"Tentativa de conclusao por um tutor.\"\n}"
+            },
+            "description": "Concluir consulta e exclusivo do veterinario. Este e o print da rubrica: 403 ao acessar rota de outro perfil.",
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}", "concluir"] }
+          }
+        },
+        {
+          "name": "TutorNaoVeAgenda",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas/agenda?data={{segunda}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "consultas", "agenda"],
+              "query": [{ "key": "data", "value": "{{segunda}}" }]
+            }
+          }
+        },
+        {
+          "name": "VeterinarioNaoListaPets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "// GET /api/pets devolve os pets do tutor logado — nao faz sentido para um veterinario."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/pets", "host": ["{{baseUrl}}"], "path": ["api", "pets"] }
+          }
+        },
+        {
+          "name": "TutorNaoBuscaPets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/pets/buscar?nome=Rex",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pets", "buscar"],
+              "query": [{ "key": "nome", "value": "Rex" }]
+            }
+          }
+        },
+        {
+          "name": "OutroTutorNaoVeHistorico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('403 Forbidden', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenOutroResponsavel}}" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}/historico", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}", "historico"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RegrasDeEstado",
+      "item": [
+        {
+          "name": "ConcluirDuasVezes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+                  "// Evita gerar dois registros no historico clinico."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observacoes\": \"Tentando concluir novamente.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}", "concluir"] }
+          }
+        },
+        {
+          "name": "CancelarConsultaRealizada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('409 Conflict', () => pm.response.to.have.status(409));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/cancelar", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}", "cancelar"] }
+          }
+        },
+        {
+          "name": "ObservacoesMuitoCurtas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+                  "pm.test('aponta o campo observacoes', () => {",
+                  "    pm.expect(pm.response.json().campos.map(c => c.campo)).to.include('observacoes');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenVeterinario}}" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"observacoes\": \"ok\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/consultas/{{consultaId}}/concluir", "host": ["{{baseUrl}}"], "path": ["api", "consultas", "{{consultaId}}", "concluir"] }
+          }
+        },
+        {
+          "name": "ExcluirPetComConsultaAgendada",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Cria uma consulta agendada para o pet, para que a exclusao seja bloqueada.",
+                  "const req = {",
+                  "    url: pm.collectionVariables.get('baseUrl') + '/api/consultas',",
+                  "    method: 'POST',",
+                  "    header: {",
+                  "        'Content-Type': 'application/json',",
+                  "        Authorization: 'Bearer ' + pm.collectionVariables.get('tokenResponsavel')",
+                  "    },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            petId: Number(pm.collectionVariables.get('petId')),",
+                  "            veterinarioId: Number(pm.collectionVariables.get('veterinarioId')),",
+                  "            tipo: 'ROTINA',",
+                  "            descricao: 'Consulta que bloqueia a exclusao',",
+                  "            data: pm.collectionVariables.get('segunda') + 'T09:00:00'",
+                  "        })",
+                  "    }",
+                  "};",
+                  "pm.sendRequest(req, () => {});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('menciona consultas agendadas', () => {",
+                  "    pm.expect(pm.response.json().mensagem.toLowerCase()).to.include('agendada');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/pets/{{petId}}", "host": ["{{baseUrl}}"], "path": ["api", "pets", "{{petId}}"] }
+          }
         }
       ]
     }

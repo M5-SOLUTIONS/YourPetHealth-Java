@@ -16,29 +16,12 @@
 
                 <form th:action="@{/cadastro}" th:object="${form}" method="post">
 
-                    <!-- Erros que não pertencem a um campo: e-mail duplicado, por exemplo.
-                         Precisa estar dentro do form, onde th:object está no contexto. -->
                     <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
                         <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="nome" class="form-label">Nome completo</label>
-                        <input type="text" id="nome" th:field="*{nome}"
-                               class="form-control"
-                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
-                        <div class="campo-erro" th:if="${#fields.hasErrors('nome')}"
-                             th:errors="*{nome}"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">E-mail</label>
-                        <input type="email" id="email" th:field="*{email}"
-                               class="form-control"
-                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
-                        <div class="campo-erro" th:if="${#fields.hasErrors('email')}"
-                             th:errors="*{email}"></div>
-                    </div>
+                    <div th:replace="~{layout :: campo('nome', 'Nome completo', 'text')}"></div>
+                    <div th:replace="~{layout :: campo('email', 'E-mail', 'email')}"></div>
 
                     <div class="mb-3">
                         <label for="senha" class="form-label">Senha</label>
@@ -73,18 +56,9 @@
                              th:errors="*{perfil}"></div>
                     </div>
 
-                    <!-- Exibido pelo app.js quando o perfil é VETERINARIO.
-                         A obrigatoriedade do CRMV é verificada no controller. -->
                     <div id="camposVeterinario" style="display: none">
 
-                        <div class="mb-3">
-                            <label for="crmv" class="form-label">CRMV</label>
-                            <input type="text" id="crmv" th:field="*{crmv}"
-                                   class="form-control" placeholder="SP-12345"
-                                   th:classappend="${#fields.hasErrors('crmv')} ? 'is-invalid'">
-                            <div class="campo-erro" th:if="${#fields.hasErrors('crmv')}"
-                                 th:errors="*{crmv}"></div>
-                        </div>
+                        <div th:replace="~{layout :: campo('crmv', 'CRMV', 'text')}"></div>
 
                         <div class="mb-3">
                             <label for="especialidade" class="form-label">Especialidade</label>
