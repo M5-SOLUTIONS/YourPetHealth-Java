@@ -43,6 +43,7 @@ public class SecurityConfig {
     SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/api/**")
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
