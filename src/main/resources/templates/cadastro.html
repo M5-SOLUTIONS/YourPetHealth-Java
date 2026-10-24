@@ -5,84 +5,112 @@
 
 <body>
 
-<main class="container">
-    <div class="caixa-auth">
+<main class="auth">
 
-        <h1 class="mb-1">Criar conta</h1>
-        <p class="text-secondary mb-4">Leva menos de um minuto.</p>
+    <aside th:replace="~{layout :: painel-marca(
+            'Comece a cuidar melhor em poucos minutos.',
+            'Crie sua conta como responsável pelo pet ou como veterinário da clínica.')}"></aside>
 
-        <div class="card">
-            <div class="card-body">
+    <section class="auth-conteudo">
+        <div class="auth-formulario">
 
-                <form th:action="@{/cadastro}" th:object="${form}" method="post">
+            <h2 class="auth-titulo">Crie sua conta</h2>
+            <p class="auth-subtitulo">Leva menos de um minuto.</p>
 
-                    <!-- Erros que não pertencem a um campo: e-mail duplicado, por exemplo -->
-                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
-                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
-                    </div>
+            <form th:action="@{/cadastro}" th:object="${form}" method="post">
 
-                    <div th:replace="~{layout :: campo('nome', 'Nome completo', 'text')}"></div>
-                    <div th:replace="~{layout :: campo('email', 'E-mail', 'email')}"></div>
+                <!-- Erros que não pertencem a um campo: e-mail duplicado, por exemplo -->
+                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                    <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
+                </div>
 
-                    <div class="mb-3">
-                        <label for="senha" class="form-label">Senha</label>
-                        <input type="password" id="senha" th:field="*{senha}"
-                               class="form-control"
-                               th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
-                        <div class="form-text">No mínimo 8 caracteres.</div>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('senha')}"
-                             th:errors="*{senha}"></div>
-                    </div>
+                <!-- O perfil vem primeiro: é ele que decide quais campos aparecem -->
+                <fieldset class="mb-4">
+                    <legend class="form-label fs-6">Como você vai usar o YourPetHealth?</legend>
 
-                    <div class="mb-3">
-                        <label for="telefone" class="form-label">Telefone</label>
-                        <input type="text" id="telefone" th:field="*{telefone}"
-                               class="form-control" placeholder="11987654321"
-                               th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid'">
-                        <div class="campo-erro" th:if="${#fields.hasErrors('telefone')}"
-                             th:errors="*{telefone}"></div>
-                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" id="perfilResponsavel"
+                                   th:field="*{perfil}" value="RESPONSAVEL">
+                            <label class="opcao-perfil" for="perfilResponsavel">
+                                <span class="opcao-perfil-titulo">Responsável</span>
+                                <span class="opcao-perfil-descricao">
+                                    Cadastro meus pets e agendo consultas
+                                </span>
+                            </label>
+                        </div>
 
-                    <div class="mb-3">
-                        <label for="perfil" class="form-label">Tipo de conta</label>
-                        <select id="perfil" th:field="*{perfil}" class="form-select"
-                                th:classappend="${#fields.hasErrors('perfil')} ? 'is-invalid'">
-                            <option value="">Selecione</option>
-                            <option th:each="p : ${perfis}"
-                                    th:value="${p}"
-                                    th:text="${p.name() == 'RESPONSAVEL'}
-                                             ? 'Responsável pelo pet' : 'Veterinário'"></option>
-                        </select>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('perfil')}"
-                             th:errors="*{perfil}"></div>
-                    </div>
-
-                    <!-- Exibido pelo app.js quando o perfil é VETERINARIO.
-                         A obrigatoriedade do CRMV é verificada no controller. -->
-                    <div id="camposVeterinario" style="display: none">
-
-                        <div th:replace="~{layout :: campo('crmv', 'CRMV', 'text')}"></div>
-
-                        <div class="mb-3">
-                            <label for="especialidade" class="form-label">Especialidade</label>
-                            <input type="text" id="especialidade" th:field="*{especialidade}"
-                                   class="form-control" placeholder="Clínica geral">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" id="perfilVeterinario"
+                                   th:field="*{perfil}" value="VETERINARIO">
+                            <label class="opcao-perfil" for="perfilVeterinario">
+                                <span class="opcao-perfil-titulo">Veterinário</span>
+                                <span class="opcao-perfil-descricao">
+                                    Atendo consultas e registro o histórico
+                                </span>
+                            </label>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mt-2">Criar conta</button>
-                </form>
-            </div>
-        </div>
+                    <div class="campo-erro" th:if="${#fields.hasErrors('perfil')}"
+                         th:errors="*{perfil}"></div>
+                </fieldset>
 
-        <p class="text-center mt-4 mb-0">
-            Já tem conta?
-            <a th:href="@{/login}">Entrar</a>
-        </p>
-    </div>
+                <div th:replace="~{layout :: campo('nome', 'Nome completo', 'text')}"></div>
+                <div th:replace="~{layout :: campo('email', 'E-mail', 'email')}"></div>
+
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Senha</label>
+                    <div class="input-group">
+                        <input type="password" id="senha" th:field="*{senha}"
+                               class="form-control" autocomplete="new-password"
+                               th:classappend="${#fields.hasErrors('senha')} ? 'is-invalid'">
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-alternar-senha="senha"
+                                aria-controls="senha" aria-pressed="false">Mostrar</button>
+                    </div>
+                    <div class="form-text">No mínimo 8 caracteres.</div>
+                    <div class="campo-erro" th:if="${#fields.hasErrors('senha')}"
+                         th:errors="*{senha}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="telefone" class="form-label">Telefone</label>
+                    <input type="text" id="telefone" th:field="*{telefone}"
+                           class="form-control" placeholder="11987654321"
+                           autocomplete="tel"
+                           th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid'">
+                    <div class="campo-erro" th:if="${#fields.hasErrors('telefone')}"
+                         th:errors="*{telefone}"></div>
+                </div>
+
+                <!-- Exibido pelo app.js quando o perfil escolhido é VETERINARIO.
+                     A obrigatoriedade do CRMV é verificada no controller. -->
+                <div id="camposVeterinario" hidden>
+
+                    <p class="auth-secao">Dados profissionais</p>
+
+                    <div th:replace="~{layout :: campo('crmv', 'CRMV', 'text')}"></div>
+
+                    <div class="mb-3">
+                        <label for="especialidade" class="form-label">Especialidade</label>
+                        <input type="text" id="especialidade" th:field="*{especialidade}"
+                               class="form-control" placeholder="Clínica geral">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Criar conta</button>
+            </form>
+
+            <p class="auth-alternativa">
+                Já tem conta?
+                <a th:href="@{/login}">Entrar</a>
+            </p>
+        </div>
+    </section>
 </main>
 
-<footer th:replace="~{layout :: footer}"></footer>
+<th:block th:replace="~{layout :: scripts}"></th:block>
 
 </body>
 </html>

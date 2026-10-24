@@ -7,63 +7,87 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<main class="container" th:with="buscou=${nome != null and !#strings.isEmpty(#strings.trim(nome))}">
 
-    <h1 class="mb-4">Buscar pet</h1>
-
-    <form th:action="@{/vet/pets}" method="get" class="row g-2 align-items-end mb-4"
-          style="max-width: 30rem">
-        <div class="col">
-            <label for="nome" class="form-label">Nome do pet</label>
-            <input type="text" id="nome" name="nome" class="form-control"
-                   th:value="${nome}" placeholder="Thor" autofocus>
+    <header class="pagina-topo">
+        <div>
+            <h1>Buscar pet</h1>
+            <p class="pagina-subtitulo">Consulte os dados de um paciente pelo nome.</p>
         </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Buscar</button>
+    </header>
+
+    <form th:action="@{/vet/pets}" method="get" class="card mb-4" role="search" style="max-width: 40rem">
+        <div class="card-body">
+            <label for="nome" class="form-label">Nome do pet</label>
+            <div class="input-group">
+                <input type="search" id="nome" name="nome" class="form-control"
+                       th:value="${nome}" placeholder="Thor" autocomplete="off" autofocus>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+            <div class="form-text">A busca encontra nomes que contenham o texto digitado.</div>
         </div>
     </form>
 
     <!-- Antes da primeira busca não há nada a mostrar -->
-    <div th:if="${nome == null or #strings.isEmpty(nome)}" class="vazio">
-        <p class="mb-0">Digite o nome de um pet para consultar seus dados.</p>
+    <div th:unless="${buscou}" class="vazio">
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Digite o nome de um pet</p>
+        <p class="vazio-texto">Os resultados mostram raça, idade, responsável e as consultas do paciente.</p>
     </div>
 
-    <div th:if="${nome != null and !#strings.isEmpty(nome) and #lists.isEmpty(pets)}"
-         class="vazio">
-        <p class="mb-0">Nenhum pet encontrado com esse nome.</p>
+    <div th:if="${buscou and #lists.isEmpty(pets)}" class="vazio">
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo" th:text="|Nenhum pet encontrado para “${nome}”|">Nenhum pet encontrado</p>
+        <p class="vazio-texto">Confira a grafia ou tente só o começo do nome.</p>
     </div>
 
-    <div class="row g-3" th:unless="${#lists.isEmpty(pets)}">
-        <div class="col-md-6" th:each="p : ${pets}">
-            <div class="card h-100">
-                <div class="card-body">
+    <th:block th:if="${buscou and !#lists.isEmpty(pets)}">
+        <p class="text-secondary mb-3"
+           th:text="${#lists.size(pets) == 1} ? |1 pet encontrado para “${nome}”|
+                    : |${#lists.size(pets)} pets encontrados para “${nome}”|">Resultados</p>
 
-                    <h2 class="mb-1" th:text="${p.nome}">Nome</h2>
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-4" th:each="p : ${pets}">
+                <article class="card pet-card h-100">
+                    <div class="card-body">
 
-                    <p class="text-secondary mb-2">
-                        <span th:text="${p.raca} ?: 'Raça não informada'">Raça</span> ·
-                        <span th:text="${p.sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</span> ·
-                        <span th:text="${p.idade} + (${p.idade} == 1 ? ' ano' : ' anos')">idade</span>
-                        <span th:if="${p.peso}" th:text="' · ' + ${p.peso} + ' kg'"></span>
-                    </p>
+                        <div class="pet-card-topo">
+                            <span th:replace="~{layout :: avatar(${p.nome}, '')}"></span>
+                            <div class="min-w-0">
+                                <h2 class="pet-card-nome text-truncate" th:text="${p.nome}">Nome</h2>
+                                <p class="mb-0 small text-secondary"
+                                   th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+                            </div>
+                        </div>
 
-                    <p class="small mb-0">
-                        <span class="fw-semibold">Responsável:</span>
-                        <span th:text="${p.responsavelNome}">responsável</span>
-                    </p>
+                        <div class="pet-meta">
+                            <span class="etiqueta"><th:block th:replace="~{layout :: sexo(${p.sexo})}"></th:block></span>
+                            <span class="etiqueta"
+                                  th:text="${p.idade} + (${p.idade} == 1 ? ' ano' : ' anos')">idade</span>
+                            <span class="etiqueta" th:if="${p.peso}"
+                                  th:text="${#numbers.formatDecimal(p.peso, 1, 'POINT', 1, 'COMMA')} + ' kg'">peso</span>
+                        </div>
 
-                    <p class="small text-secondary mb-0">
-                        <span th:text="${p.totalConsultas}">0</span>
-                        <span th:text="${p.totalConsultas} == 1 ? 'consulta' : 'consultas'">consultas</span>
-                        <span th:if="${p.proximaConsulta}">
-                            · próxima em
-                            <span th:text="${#temporals.format(p.proximaConsulta, 'dd/MM ''às'' HH:mm')}">data</span>
-                        </span>
-                    </p>
-                </div>
+                        <p class="small mb-0">
+                            <span class="text-secondary">Responsável:</span>
+                            <span class="fw-semibold" th:text="${p.responsavelNome}">responsável</span>
+                        </p>
+
+                        <div class="pet-card-rodape">
+                            <span th:text="${p.totalConsultas} + (${p.totalConsultas} == 1 ? ' consulta' : ' consultas')">
+                                0 consultas
+                            </span>
+                            <span th:if="${p.proximaConsulta}">
+                                · próxima
+                                <span class="proxima"
+                                      th:text="${#temporals.format(p.proximaConsulta, 'dd/MM ''às'' HH:mm')}">data</span>
+                            </span>
+                        </div>
+                    </div>
+                </article>
             </div>
         </div>
-    </div>
+    </th:block>
 </main>
 
 <footer th:replace="~{layout :: footer}"></footer>

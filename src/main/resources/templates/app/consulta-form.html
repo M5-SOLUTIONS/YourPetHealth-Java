@@ -9,7 +9,7 @@
 
 <main class="container">
 
-    <nav aria-label="Você está em" class="mb-3">
+    <nav aria-label="Você está em">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/app/consultas}">Consultas</a></li>
             <li class="breadcrumb-item active" aria-current="page"
@@ -17,103 +17,171 @@
         </ol>
     </nav>
 
-    <div style="max-width: 34rem">
+    <header class="pagina-topo">
+        <div>
+            <h1 th:text="${edicao} ? 'Reagendar consulta' : 'Agendar consulta'">Agendar consulta</h1>
+            <p class="pagina-subtitulo"
+               th:text="${edicao} ? 'Altere o tipo, o horário ou o motivo. Pet e veterinário continuam os mesmos.'
+                                  : 'Escolha o pet, o veterinário e o melhor horário.'">
+                Subtítulo
+            </p>
+        </div>
+    </header>
 
-        <h1 class="mb-4"
-            th:text="${edicao} ? 'Reagendar consulta' : 'Agendar consulta'">Agendar consulta</h1>
+    <!-- Sem pets não há o que agendar -->
+    <div th:if="${#lists.isEmpty(pets)}" class="vazio">
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Cadastre um pet primeiro</p>
+        <p class="vazio-texto">A consulta é sempre marcada para um dos seus pets.</p>
+        <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
+    </div>
 
-        <div class="card">
-            <div class="card-body">
+    <div class="row g-4" th:unless="${#lists.isEmpty(pets)}">
 
-                <form th:action="${edicao}
-                                 ? @{/app/consultas/{id}(id=${consultaId})}
-                                 : @{/app/consultas}"
-                      th:object="${form}" method="post">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4">
 
-                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
-                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
-                    </div>
+                    <form th:action="${edicao}
+                                     ? @{/app/consultas/{id}(id=${consultaId})}
+                                     : @{/app/consultas}"
+                          th:object="${form}" method="post" novalidate data-enviar-uma-vez>
 
-                    <div class="mb-3">
-                        <label for="petId" class="form-label">Pet</label>
-                        <select id="petId" th:field="*{petId}" class="form-select"
-                                th:attr="disabled=${edicao}? 'disabled'"
-                                th:classappend="${#fields.hasErrors('petId')} ? 'is-invalid'">
-                            <option value="">Selecione</option>
-                            <option th:each="p : ${pets}"
-                                    th:value="${p.id}" th:text="${p.nome}"></option>
-                        </select>
-                        <!-- Reenvia o valor mesmo com o select desabilitado -->
-                        <input type="hidden" th:if="${edicao}" th:field="*{petId}">
-                        <div class="form-text" th:if="${edicao}">
-                            O pet não pode ser alterado ao reagendar.
+                        <!-- As regras de agendamento recusadas pela API chegam aqui -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                            <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                         </div>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('petId')}"
-                             th:errors="*{petId}"></div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="veterinarioId" class="form-label">Veterinário</label>
-                        <select id="veterinarioId" th:field="*{veterinarioId}" class="form-select"
-                                th:attr="disabled=${edicao}? 'disabled'"
-                                th:classappend="${#fields.hasErrors('veterinarioId')} ? 'is-invalid'">
-                            <option value="">Selecione</option>
-                            <option th:each="v : ${veterinarios}"
-                                    th:value="${v.id}"
-                                    th:text="${v.nome} + (${v.especialidade}
-                                             ? ' — ' + ${v.especialidade} : '')"></option>
-                        </select>
-                        <input type="hidden" th:if="${edicao}" th:field="*{veterinarioId}">
-                        <div class="form-text" th:if="${edicao}">
-                            O veterinário não pode ser alterado ao reagendar.
+                        <p class="card-titulo-secao">Quem participa</p>
+
+                        <!-- ---------- Reagendamento: pet e veterinário só para leitura ---------- -->
+                        <th:block th:if="${edicao}">
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6">
+                                    <span class="form-label d-block">Pet</span>
+                                    <div class="item-consulta py-2">
+                                        <th:block th:each="p : ${pets}" th:if="${p.id == form.petId}">
+                                            <span th:replace="~{layout :: avatar(${p.nome}, '')}"></span>
+                                            <span class="fw-semibold" th:text="${p.nome}">Pet</span>
+                                        </th:block>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="form-label d-block">Veterinário</span>
+                                    <div class="item-consulta py-2">
+                                        <th:block th:each="v : ${veterinarios}" th:if="${v.id == form.veterinarioId}">
+                                            <div class="min-w-0">
+                                                <p class="mb-0 fw-semibold text-truncate" th:text="${v.nome}">Vet</p>
+                                                <p class="mb-0 small text-secondary" th:if="${v.especialidade}"
+                                                   th:text="${v.especialidade}">Especialidade</p>
+                                            </div>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Reenviados para o binding; o reagendamento não os altera -->
+                            <input type="hidden" th:field="*{petId}">
+                            <input type="hidden" th:field="*{veterinarioId}">
+                        </th:block>
+
+                        <!-- ---------- Novo agendamento ---------- -->
+                        <div class="row g-3 mb-4" th:unless="${edicao}">
+                            <div class="col-sm-6">
+                                <label for="petId" class="form-label">Pet</label>
+                                <select id="petId" th:field="*{petId}" class="form-select"
+                                        th:classappend="${#fields.hasErrors('petId')} ? 'is-invalid'">
+                                    <option value="">Selecione</option>
+                                    <option th:each="p : ${pets}"
+                                            th:value="${p.id}" th:text="${p.nome}"></option>
+                                </select>
+                                <div class="campo-erro" th:if="${#fields.hasErrors('petId')}"
+                                     th:errors="*{petId}"></div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label for="veterinarioId" class="form-label">Veterinário</label>
+                                <select id="veterinarioId" th:field="*{veterinarioId}" class="form-select"
+                                        th:classappend="${#fields.hasErrors('veterinarioId')} ? 'is-invalid'">
+                                    <option value="">Selecione</option>
+                                    <option th:each="v : ${veterinarios}"
+                                            th:value="${v.id}"
+                                            th:text="${v.nome} + (${v.especialidade}
+                                                     ? ' — ' + ${v.especialidade} : '')"></option>
+                                </select>
+                                <div class="campo-erro" th:if="${#fields.hasErrors('veterinarioId')}"
+                                     th:errors="*{veterinarioId}"></div>
+                            </div>
                         </div>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('veterinarioId')}"
-                             th:errors="*{veterinarioId}"></div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="tipo" class="form-label">Tipo de consulta</label>
-                        <select id="tipo" th:field="*{tipo}" class="form-select"
-                                th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid'">
-                            <option value="">Selecione</option>
-                            <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"></option>
-                        </select>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('tipo')}"
-                             th:errors="*{tipo}"></div>
-                    </div>
+                        <p class="card-titulo-secao">Detalhes</p>
 
-                    <div class="mb-3">
-                        <label for="data" class="form-label">Data e hora</label>
-                        <input type="datetime-local" id="data" th:field="*{data}"
-                               class="form-control"
-                               th:classappend="${#fields.hasErrors('data')} ? 'is-invalid'">
-                        <div class="form-text">
-                            Atendimento de segunda a sábado, das 08:00 às 18:00,
-                            com no mínimo 2 horas de antecedência.
+                        <fieldset class="mb-3">
+                            <legend class="form-label fs-6">Tipo de consulta</legend>
+                            <div class="chips" th:classappend="${#fields.hasErrors('tipo')} ? 'is-invalid'">
+                                <th:block th:each="t : ${tipos}">
+                                    <input type="radio" class="btn-check" th:field="*{tipo}" th:value="${t}">
+                                    <label class="chip" th:for="${#ids.prev('tipo')}">
+                                        <th:block th:replace="~{layout :: tipo(${t})}"></th:block>
+                                    </label>
+                                </th:block>
+                            </div>
+                            <div class="campo-erro" th:if="${#fields.hasErrors('tipo')}"
+                                 th:errors="*{tipo}"></div>
+                        </fieldset>
+
+                        <div class="mb-3">
+                            <label for="data" class="form-label">Data e hora</label>
+                            <input type="datetime-local" id="data" th:field="*{data}"
+                                   class="form-control" style="max-width: 18rem"
+                                   th:classappend="${#fields.hasErrors('data')} ? 'is-invalid'">
+                            <div class="form-text">Segunda a sábado, das 08:00 às 18:00.</div>
+                            <div class="campo-erro" th:if="${#fields.hasErrors('data')}"
+                                 th:errors="*{data}"></div>
                         </div>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('data')}"
-                             th:errors="*{data}"></div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label for="descricao" class="form-label">Motivo da consulta</label>
-                        <textarea id="descricao" th:field="*{descricao}" class="form-control"
-                                  rows="3" placeholder="Check-up semestral"
-                                  th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('descricao')}"
-                             th:errors="*{descricao}"></div>
-                    </div>
+                        <div class="mb-1">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <label for="descricao" class="form-label">
+                                    Motivo <span class="fw-normal text-secondary">(opcional)</span>
+                                </label>
+                                <span id="contadorDescricao" class="contador-caracteres"></span>
+                            </div>
+                            <textarea id="descricao" th:field="*{descricao}" class="form-control"
+                                      rows="3" maxlength="1000" data-contador="contadorDescricao"
+                                      placeholder="Check-up semestral, vacina anual, queda de pelo…"
+                                      th:classappend="${#fields.hasErrors('descricao')} ? 'is-invalid'"></textarea>
+                            <div class="campo-erro" th:if="${#fields.hasErrors('descricao')}"
+                                 th:errors="*{descricao}"></div>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"
-                                th:text="${edicao} ? 'Salvar alterações' : 'Agendar consulta'">
-                            Agendar consulta
-                        </button>
-                        <a th:href="@{/app/consultas}" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </form>
+                        <div class="formulario-acoes">
+                            <button type="submit" class="btn btn-primary"
+                                    th:text="${edicao} ? 'Salvar novo horário' : 'Agendar consulta'"
+                                    data-texto-enviando="Verificando horário…">
+                                Agendar consulta
+                            </button>
+                            <a th:href="@{/app/consultas}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
+
+        <!-- ---------- Regras: as mesmas que a API valida ---------- -->
+        <aside class="col-lg-4">
+            <div class="card card-suave coluna-fixa">
+                <div class="card-body">
+                    <p class="card-titulo-secao">Antes de confirmar</p>
+                    <ul class="regras">
+                        <li>Atendimento de segunda a sábado, das 08:00 às 18:00.</li>
+                        <li>Marque com pelo menos 2 horas de antecedência.</li>
+                        <li>O veterinário não pode ter outra consulta próxima ao horário escolhido.</li>
+                        <li>O pet não pode ter duas consultas no mesmo horário.</li>
+                        <li>Reagendar e cancelar só até 24 horas antes da consulta.</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
     </div>
 </main>
 

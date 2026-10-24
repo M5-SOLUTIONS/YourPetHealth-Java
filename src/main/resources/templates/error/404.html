@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Página não encontrada')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+    <div class="pagina-aviso">
+
+        <span class="pagina-aviso-icone aviso-erro" aria-hidden="true">
+            <svg th:replace="~{layout :: logo}"></svg>
+        </span>
+
+        <span class="pagina-aviso-codigo">Erro 404 · Página não encontrada</span>
+        <h1 class="mb-3">Este caminho não leva a lugar nenhum</h1>
+
+        <p class="text-secondary mb-0">
+            O endereço pode ter sido digitado errado ou a página não existe mais.
+        </p>
+
+        <!-- "path" é preenchido pelo próprio Spring Boot com a URL que falhou -->
+        <p class="small text-secondary mt-3 mb-0" th:if="${path}">
+            Endereço acessado: <code th:text="${path}">/caminho</code>
+        </p>
+
+        <div class="acoes">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Voltar</a>
+
+            <a sec:authorize="hasRole('RESPONSAVEL')"
+               th:href="@{/app/home}" class="btn btn-primary">Ir para o início</a>
+
+            <a sec:authorize="hasRole('VETERINARIO')"
+               th:href="@{/vet/agenda}" class="btn btn-primary">Ir para a agenda</a>
+
+            <a sec:authorize="hasRole('ADMIN')"
+               th:href="@{/admin/dashboard}" class="btn btn-primary">Ir para o dashboard</a>
+
+            <a sec:authorize="!isAuthenticated()"
+               th:href="@{/login}" class="btn btn-primary">Entrar</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

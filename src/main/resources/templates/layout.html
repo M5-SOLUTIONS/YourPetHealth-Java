@@ -13,12 +13,110 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
           rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 
 <body>
+
+<!-- ============================================================
+     Marca
+     ============================================================ -->
+
+<svg th:fragment="logo" class="logo-marca" viewBox="0 0 32 32"
+     aria-hidden="true" focusable="false">
+    <ellipse cx="16" cy="21" rx="7" ry="6"/>
+    <ellipse cx="7.5" cy="13" rx="2.8" ry="3.4"/>
+    <ellipse cx="12.5" cy="8" rx="2.8" ry="3.4"/>
+    <ellipse cx="19.5" cy="8" rx="2.8" ry="3.4"/>
+    <ellipse cx="24.5" cy="13" rx="2.8" ry="3.4"/>
+</svg>
+
+<!-- Painel lateral das telas de login e cadastro -->
+<aside th:fragment="painel-marca(titulo, subtitulo)" class="auth-marca">
+
+    <a th:href="@{/login}" class="auth-logo">
+        <span class="auth-logo-icone"><svg th:replace="~{layout :: logo}"></svg></span>
+        YourPetHealth
+    </a>
+
+    <div class="auth-chamada">
+        <h1 th:text="${titulo}">Título</h1>
+        <p th:text="${subtitulo}">Subtítulo</p>
+    </div>
+
+    <ul class="auth-beneficios d-none d-lg-block">
+        <li>
+            <strong>Agenda sem conflitos</strong>
+            Cada horário é validado na hora, sem choque com a agenda do veterinário.
+        </li>
+        <li>
+            <strong>Histórico sempre em dia</strong>
+            Todo atendimento concluído vira um registro no histórico clínico do pet.
+        </li>
+        <li>
+            <strong>Cada um vê o que é seu</strong>
+            Responsáveis acessam os próprios pets; veterinários, a própria agenda.
+        </li>
+    </ul>
+</aside>
+
+<!-- ============================================================
+     Rótulos de domínio
+     Os enums chegam em maiúsculas e sem acento; aqui viram texto de tela.
+     ============================================================ -->
+
+<span th:fragment="status(status)" class="status"
+      th:classappend="'status-' + ${#strings.toLowerCase(status)}"
+      th:switch="${status.name()}">
+    <th:block th:case="'AGENDADA'">Agendada</th:block>
+    <th:block th:case="'REALIZADA'">Realizada</th:block>
+    <th:block th:case="*">Cancelada</th:block>
+</span>
+
+<th:block th:fragment="tipo(tipo)" th:switch="${tipo.name()}">
+    <th:block th:case="'ROTINA'">Rotina</th:block>
+    <th:block th:case="'VACINACAO'">Vacinação</th:block>
+    <th:block th:case="'EMERGENCIA'">Emergência</th:block>
+    <th:block th:case="'RETORNO'">Retorno</th:block>
+    <th:block th:case="*">Exame</th:block>
+</th:block>
+
+<th:block th:fragment="sexo(sexo)"
+          th:text="${sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</th:block>
+
+<!-- Inicial do nome em um círculo; a cor varia pelo tamanho do nome,
+     para pets diferentes não parecerem todos iguais na lista -->
+<span th:fragment="avatar(nome, tamanho)" class="avatar"
+      th:classappend="|avatar-${nome.length() % 4} ${tamanho}|"
+      th:text="${#strings.toUpperCase(#strings.substring(nome, 0, 1))}"
+      aria-hidden="true">A</span>
+
+<!-- ============================================================
+     Componentes
+     ============================================================ -->
+
+<!-- Linha compacta de consulta: usada na home e no detalhe do pet -->
+<div th:fragment="item-consulta(c)" class="item-consulta">
+    <div class="data-bloco">
+        <span class="data-bloco-dia" th:text="${#temporals.format(c.data, 'dd/MM')}">00/00</span>
+        <span class="data-bloco-hora" th:text="${#temporals.format(c.data, 'HH:mm')}">00:00</span>
+    </div>
+    <div class="item-consulta-corpo">
+        <p class="mb-0 fw-semibold">
+            <th:block th:replace="~{layout :: tipo(${c.tipo})}"></th:block>
+            <span class="text-secondary fw-normal" th:text="'· ' + ${c.petNome}">· Pet</span>
+        </p>
+        <p class="mb-0 small text-secondary" th:text="${c.veterinarioNome}">Veterinário</p>
+    </div>
+    <span th:replace="~{layout :: status(${c.status})}"></span>
+</div>
+
+<!-- Ícone dos estados vazios -->
+<span th:fragment="icone-vazio" class="vazio-icone">
+    <svg th:replace="~{layout :: logo}"></svg>
+</span>
 
 <div th:fragment="campo(id, rotulo, tipo)" class="mb-3">
     <label th:for="${id}" class="form-label" th:text="${rotulo}"></label>
@@ -30,10 +128,18 @@
          th:errors="*{__${id}__}"></div>
 </div>
 
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-yph mb-4">
+<!-- ============================================================
+     Navegação
+     O link ativo é marcado pelo app.js a partir da URL atual.
+     ============================================================ -->
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-yph mb-4" data-bs-theme="dark">
     <div class="container">
 
-        <a class="navbar-brand" th:href="@{/}">YourPetHealth</a>
+        <a class="navbar-brand" th:href="@{/}">
+            <span class="navbar-logo"><svg th:replace="~{layout :: logo}"></svg></span>
+            YourPetHealth
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#menu" aria-controls="menu"
@@ -69,32 +175,70 @@
                 </li>
             </ul>
 
-            <div class="d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
-                <span class="selo-admin" sec:authorize="hasRole('ADMIN')">Administrador</span>
-                <span class="text-white-50 small" sec:authentication="name">usuário</span>
+            <div class="dropdown usuario-menu" sec:authorize="isAuthenticated()">
+                <button class="btn usuario-menu-botao dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false"
+                        aria-label="Menu da conta">
+                    <span class="avatar-usuario"
+                          th:text="${#strings.toUpperCase(#strings.substring(#authentication.name, 0, 1))}">U</span>
+                    <span class="usuario-menu-email" sec:authentication="name">usuário</span>
+                </button>
 
-                <!-- Logout precisa ser POST: o CSRF vai no th:action -->
-                <form th:action="@{/logout}" method="post" class="m-0">
-                    <button type="submit" class="btn btn-sm btn-outline-light">Sair</button>
-                </form>
+                <ul class="dropdown-menu dropdown-menu-end" data-bs-theme="light">
+                    <li class="px-3 py-2">
+                        <span class="d-block small text-secondary">Conectado como</span>
+                        <span class="d-block fw-semibold text-truncate" sec:authentication="name">email</span>
+                        <span class="perfil-badge perfil-responsavel mt-2"
+                              sec:authorize="hasRole('RESPONSAVEL')">Responsável</span>
+                        <span class="perfil-badge perfil-veterinario mt-2"
+                              sec:authorize="hasRole('VETERINARIO')">Veterinário</span>
+                        <span class="perfil-badge perfil-admin mt-2"
+                              sec:authorize="hasRole('ADMIN')">Administrador</span>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <!-- Logout precisa ser POST: o CSRF vai no th:action -->
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item">Sair</button>
+                        </form>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
 </nav>
 
 <div th:fragment="mensagens">
-    <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
-    <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${sucesso}">Sucesso</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${erro}">Erro</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
 </div>
 
-<!-- Os scripts vivem aqui: toda página que inclui o footer os recebe -->
-<footer th:fragment="footer" class="py-4 mt-5">
-    <div class="container">
-        YourPetHealth · Sistema de gestão clínica veterinária
-    </div>
+<!-- ============================================================
+     Scripts e rodapé
+     ============================================================ -->
 
+<!-- Separado do rodapé: as telas de login e cadastro precisam dos scripts, mas não do rodapé -->
+<th:block th:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+<footer th:fragment="footer" class="rodape">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span class="d-inline-flex align-items-center gap-2">
+            <svg th:replace="~{layout :: logo}"></svg>
+            YourPetHealth
+        </span>
+        <span>Gestão clínica veterinária</span>
+    </div>
+
+    <th:block th:replace="~{layout :: scripts}"></th:block>
 </footer>
 
 </body>
