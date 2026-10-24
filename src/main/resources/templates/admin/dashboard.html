@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Dashboard')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+        <div>
+            <h1 class="mb-1">Visão geral da clínica</h1>
+            <p class="text-secondary mb-0">
+                Atualizado em
+                <span th:text="${#temporals.format(geradoEm, 'dd/MM/yyyy ''às'' HH:mm')}">agora</span>
+            </p>
+        </div>
+        <a th:href="@{/admin/usuarios}" class="btn btn-outline-primary">Gerenciar usuários</a>
+    </div>
+
+    <!-- ---------- Indicadores principais ---------- -->
+    <section class="row g-3 mb-3" aria-label="Indicadores principais">
+
+        <div class="col-6 col-lg-3">
+            <div class="card kpi h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Responsáveis</p>
+                    <p class="kpi-valor" th:text="${resumo.totalResponsaveis}">0</p>
+                    <p class="kpi-detalhe">contas de responsável</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card kpi h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Veterinários</p>
+                    <p class="kpi-valor" th:text="${resumo.totalVeterinarios}">0</p>
+                    <p class="kpi-detalhe">profissionais cadastrados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card kpi h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Pets</p>
+                    <p class="kpi-valor" th:text="${resumo.totalPets}">0</p>
+                    <p class="kpi-detalhe">animais acompanhados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card kpi kpi-destaque h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Próximos 7 dias</p>
+                    <p class="kpi-valor" th:text="${resumo.agendadasProximos7Dias}">0</p>
+                    <p class="kpi-detalhe">consultas agendadas</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-3 mb-4" aria-label="Indicadores de desempenho">
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="card-titulo-secao mb-2">Taxa de realização</p>
+                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                        <p class="kpi-valor mb-0"
+                           th:text="${resumo.taxaRealizacao != null} ? ${resumo.taxaRealizacao} + '%' : '—'">—</p>
+                        <span class="kpi-detalhe">das consultas encerradas foram realizadas</span>
+                    </div>
+                    <div class="barra" role="presentation">
+                        <div class="barra-preenchida"
+                             th:style="|width: ${resumo.taxaRealizacao ?: 0}%|"></div>
+                    </div>
+                    <p class="kpi-detalhe mt-2" th:if="${resumo.taxaRealizacao == null}">
+                        Ainda não há consultas realizadas ou canceladas.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="card-titulo-secao mb-2">Consultas registradas</p>
+                    <p class="kpi-valor mb-0" th:text="${resumo.totalConsultas}">0</p>
+                    <p class="kpi-detalhe">desde o início</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="card-titulo-secao mb-2">Contas desativadas</p>
+                    <p class="kpi-valor mb-0" th:text="${resumo.contasDesativadas}">0</p>
+                    <a th:href="@{/admin/usuarios}" class="small">Ver usuários</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ---------- Sem consultas: um estado vazio no lugar dos gráficos ---------- -->
+    <div th:if="${resumo.totalConsultas == 0}" class="vazio mb-4">
+        <p class="mb-0">
+            Ainda não há consultas registradas. Os gráficos aparecem assim que
+            o primeiro agendamento for feito.
+        </p>
+    </div>
+
+    <th:block th:if="${resumo.totalConsultas > 0}">
+
+        <section class="row g-3 mb-3">
+
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-titulo-secao">Consultas por mês</h2>
+                        <div class="grafico">
+                            <canvas id="graficoMeses" role="img"
+                                    aria-label="Gráfico de linha com o número de consultas por mês nos últimos seis meses"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-titulo-secao">Situação das consultas</h2>
+                        <div class="grafico grafico-compacto">
+                            <canvas id="graficoStatus" role="img"
+                                    aria-label="Gráfico de rosca com a distribuição das consultas por situação"></canvas>
+                        </div>
+
+                        <!-- Os números ficam legíveis sem precisar passar o mouse no gráfico -->
+                        <ul class="legenda mt-3">
+                            <li th:each="rotulo, i : ${resumo.consultasPorStatus.rotulos}">
+                                <span>
+                                    <span class="legenda-cor" th:classappend="'cor-' + ${i.index}"></span>
+                                    <span th:text="${rotulo}">Situação</span>
+                                </span>
+                                <span class="legenda-valor"
+                                      th:text="${resumo.consultasPorStatus.valores[i.index]}">0</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-3 mb-3">
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-titulo-secao">Consultas por tipo</h2>
+                        <div class="grafico">
+                            <canvas id="graficoTipos" role="img"
+                                    aria-label="Gráfico de barras com o número de consultas por tipo"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-titulo-secao">Raças mais atendidas</h2>
+
+                        <div th:if="${#lists.isEmpty(resumo.racasMaisComuns)}" class="kpi-detalhe">
+                            Nenhum pet cadastrado.
+                        </div>
+
+                        <ul class="lista-ranking" th:unless="${#lists.isEmpty(resumo.racasMaisComuns)}">
+                            <li th:each="r : ${resumo.racasMaisComuns}">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span th:text="${r.raca}">Raça</span>
+                                    <span class="legenda-valor">
+                                        <span th:text="${r.total}">0</span>
+                                        <span class="kpi-detalhe" th:text="'(' + ${r.percentual} + '%)'"></span>
+                                    </span>
+                                </div>
+                                <div class="barra" role="presentation">
+                                    <div class="barra-preenchida"
+                                         th:style="|width: ${r.percentual}%|"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </th:block>
+
+    <!-- ---------- Ranking de veterinários ---------- -->
+    <section class="card">
+        <div class="card-body">
+            <h2 class="card-titulo-secao">Veterinários com mais atendimentos</h2>
+
+            <div th:if="${#lists.isEmpty(resumo.rankingVeterinarios)}" class="kpi-detalhe">
+                Nenhum veterinário cadastrado.
+            </div>
+
+            <div class="table-responsive" th:unless="${#lists.isEmpty(resumo.rankingVeterinarios)}">
+                <table class="table tabela-admin mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col">Veterinário</th>
+                        <th scope="col" class="text-end">Realizadas</th>
+                        <th scope="col" class="text-end">Agendadas</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="v : ${resumo.rankingVeterinarios}">
+                        <td>
+                            <span class="fw-semibold" th:text="${v.nome}">Nome</span>
+                            <span class="d-block small text-secondary"
+                                  th:text="${v.especialidade} ?: 'Especialidade não informada'"></span>
+                        </td>
+                        <td class="text-end legenda-valor" th:text="${v.realizadas}">0</td>
+                        <td class="text-end legenda-valor" th:text="${v.agendadas}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+<!-- Dados dos gráficos: o Thymeleaf serializa as listas como arrays JavaScript -->
+<script th:inline="javascript">
+    window.DASHBOARD = {
+        meses: {
+            rotulos: /*[[${resumo.consultasPorMes.rotulos}]]*/ [],
+            valores: /*[[${resumo.consultasPorMes.valores}]]*/ []
+        },
+        status: {
+            rotulos: /*[[${resumo.consultasPorStatus.rotulos}]]*/ [],
+            valores: /*[[${resumo.consultasPorStatus.valores}]]*/ []
+        },
+        tipos: {
+            rotulos: /*[[${resumo.consultasPorTipo.rotulos}]]*/ [],
+            valores: /*[[${resumo.consultasPorTipo.valores}]]*/ []
+        }
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script th:src="@{/js/admin-dashboard.js}"></script>
+
+</body>
+</html>

@@ -26,3 +26,15 @@ document.addEventListener('DOMContentLoaded', function () {
         alternarCamposVeterinario();   // mantém o estado ao voltar com erro
     }
 });
+
+/**
+ * Confirmação ao desativar ou reativar uma conta na área administrativa.
+ * Nome e ação vêm por data-*, pelo mesmo motivo de confirmarRemocao.
+ */
+function confirmarAlteracaoDeAcesso(form) {
+    const { nome, acao } = form.dataset;
+    const mensagem = acao === 'desativar'
+        ? 'Desativar a conta de ' + nome + '? Ela não poderá mais entrar no sistema.'
+        : 'Reativar a conta de ' + nome + '?';
+    return confirm(mensagem);
+}

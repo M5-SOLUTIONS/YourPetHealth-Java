@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head('Editar veterinário')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <nav aria-label="Você está em" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/usuarios}">Usuários</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Editar veterinário</li>
+        </ol>
+    </nav>
+
+    <div style="max-width: 34rem">
+
+        <h1 class="mb-1">Editar veterinário</h1>
+        <p class="text-secondary mb-4" th:text="${veterinario.nome}">Nome</p>
+
+        <div class="card">
+            <div class="card-body">
+
+                <form th:action="@{/admin/veterinarios/{id}(id=${veterinario.id})}"
+                      th:object="${form}" method="post">
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail de acesso</label>
+                        <input type="email" id="email" class="form-control"
+                               th:value="${veterinario.email}" disabled>
+                        <div class="form-text">
+                            O e-mail é a credencial de login e não pode ser alterado por aqui.
+                        </div>
+                    </div>
+
+                    <div th:replace="~{layout :: campo('nome', 'Nome', 'text')}"></div>
+
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" id="telefone" th:field="*{telefone}"
+                               class="form-control" placeholder="11987654321"
+                               th:classappend="${#fields.hasErrors('telefone')} ? 'is-invalid'">
+                        <div class="campo-erro" th:if="${#fields.hasErrors('telefone')}"
+                             th:errors="*{telefone}"></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <div th:replace="~{layout :: campo('crmv', 'CRMV', 'text')}"></div>
+                        </div>
+                        <div class="col-sm-7 mb-4">
+                            <label for="especialidade" class="form-label">Especialidade</label>
+                            <input type="text" id="especialidade" th:field="*{especialidade}"
+                                   class="form-control" placeholder="Clínica geral"
+                                   th:classappend="${#fields.hasErrors('especialidade')} ? 'is-invalid'">
+                            <div class="campo-erro" th:if="${#fields.hasErrors('especialidade')}"
+                                 th:errors="*{especialidade}"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                        <a th:href="@{/admin/usuarios}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

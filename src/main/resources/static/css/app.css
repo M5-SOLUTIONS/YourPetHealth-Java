@@ -116,3 +116,183 @@ footer {
     color: var(--yph-stone);
     font-size: 0.85rem;
 }
+
+/* ============================================================
+   Área administrativa
+   ============================================================ */
+
+.selo-admin {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+}
+
+/* ---------- Indicadores ---------- */
+
+.kpi .card-body {
+    padding: 1.1rem 1.25rem;
+}
+
+.kpi-rotulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--yph-stone);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-valor {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+    color: var(--yph-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-detalhe {
+    font-size: 0.85rem;
+    color: var(--yph-stone);
+    margin: 0;
+}
+
+.kpi-destaque {
+    border-top: 3px solid var(--yph-petrol);
+}
+
+/* ---------- Gráficos ---------- */
+
+.grafico {
+    position: relative;
+    height: 260px;
+}
+
+.grafico-compacto {
+    height: 180px;
+}
+
+.legenda {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.legenda li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--yph-borda);
+    font-size: 0.9rem;
+}
+
+.legenda li:last-child {
+    border-bottom: 0;
+}
+
+.legenda-cor {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Mesma ordem usada no admin-dashboard.js */
+.cor-0 { background: var(--yph-petrol); }
+.cor-1 { background: var(--yph-moss); }
+.cor-2 { background: var(--yph-stone); }
+
+.legenda-valor {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.lista-ranking {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-ranking li {
+    margin-bottom: 0.9rem;
+    font-size: 0.9rem;
+}
+
+.lista-ranking li:last-child {
+    margin-bottom: 0;
+}
+
+.barra {
+    height: 0.5rem;
+    background: var(--yph-sand);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barra-preenchida {
+    height: 100%;
+    background: var(--yph-petrol);
+    border-radius: inherit;
+    transition: width 0.4s ease;
+}
+
+/* ---------- Tabela de usuários ---------- */
+
+.tabela-admin th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--yph-stone);
+    background: transparent;
+    white-space: nowrap;
+}
+
+.tabela-admin td,
+.tabela-admin th {
+    padding: 0.75rem 1rem;
+}
+
+.linha-inativa td {
+    color: var(--yph-stone);
+    background: rgba(122, 133, 131, 0.05);
+}
+
+.perfil-badge,
+.conta-status {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+.perfil-responsavel {
+    color: var(--yph-petrol);
+    background: rgba(15, 100, 102, 0.08);
+}
+
+.perfil-veterinario {
+    color: var(--yph-moss);
+    background: rgba(63, 122, 63, 0.09);
+}
+
+.perfil-admin {
+    color: #FFFFFF;
+    background: var(--yph-ink);
+}
+
+.conta-ativa {
+    color: var(--yph-moss);
+    border: 1px solid var(--yph-moss);
+}
+
+.conta-inativa {
+    color: var(--yph-stone);
+    border: 1px dashed var(--yph-stone);
+}

@@ -16,6 +16,7 @@
 
                 <form th:action="@{/cadastro}" th:object="${form}" method="post">
 
+                    <!-- Erros que não pertencem a um campo: e-mail duplicado, por exemplo -->
                     <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
                         <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                     </div>
@@ -50,12 +51,14 @@
                             <option th:each="p : ${perfis}"
                                     th:value="${p}"
                                     th:text="${p.name() == 'RESPONSAVEL'}
-                                             ? 'Tutor de pet' : 'Veterinário'"></option>
+                                             ? 'Responsável pelo pet' : 'Veterinário'"></option>
                         </select>
                         <div class="campo-erro" th:if="${#fields.hasErrors('perfil')}"
                              th:errors="*{perfil}"></div>
                     </div>
 
+                    <!-- Exibido pelo app.js quando o perfil é VETERINARIO.
+                         A obrigatoriedade do CRMV é verificada no controller. -->
                     <div id="camposVeterinario" style="display: none">
 
                         <div th:replace="~{layout :: campo('crmv', 'CRMV', 'text')}"></div>

@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/cadastro", "/error",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/css/**", "/js/**", "/img/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/vet/**").hasRole("VETERINARIO")
                         .requestMatchers("/app/**").hasRole("RESPONSAVEL")
                         .anyRequest().authenticated())
@@ -90,7 +91,6 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.accessDeniedPage("/403"))
                 .build();
     }
-
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -109,7 +109,6 @@ public class SecurityConfig {
             throws Exception {
         return config.getAuthenticationManager();
     }
-
 
     private void escrever(HttpServletResponse response, int status,
                           String codigo, String mensagem, String path) throws java.io.IOException {
