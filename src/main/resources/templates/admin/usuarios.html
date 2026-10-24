@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head('Usuários')}"></head>
+
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container">
+
+    <div th:replace="~{layout :: mensagens}"></div>
+
+    <div class="mb-4">
+        <h1 class="mb-1">Usuários</h1>
+        <p class="text-secondary mb-0">
+            Gerencie o acesso de responsáveis e veterinários.
+            Contas desativadas não conseguem entrar no sistema, mas todo o histórico é preservado.
+        </p>
+    </div>
+
+    <!-- ---------- Filtros ---------- -->
+    <form th:action="@{/admin/usuarios}" method="get" class="card mb-4">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-md-5">
+                <label for="busca" class="form-label">Buscar</label>
+                <input type="search" id="busca" name="busca" class="form-control"
+                       th:value="${busca}" placeholder="Nome ou e-mail">
+            </div>
+            <div class="col-md-4">
+                <label for="perfil" class="form-label">Perfil</label>
+                <select id="perfil" name="perfil" class="form-select">
+                    <option value="" th:selected="${perfilSelecionado == null}">Todos os perfis</option>
+                    <option value="RESPONSAVEL"
+                            th:selected="${perfilSelecionado?.name() == 'RESPONSAVEL'}">Responsáveis</option>
+                    <option value="VETERINARIO"
+                            th:selected="${perfilSelecionado?.name() == 'VETERINARIO'}">Veterinários</option>
+                    <option value="ADMIN"
+                            th:selected="${perfilSelecionado?.name() == 'ADMIN'}">Administradores</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">Filtrar</button>
+                <a th:href="@{/admin/usuarios}" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </div>
+    </form>
+
+    <p class="small text-secondary mb-2"
+       th:text="${#lists.size(usuarios)} + (${#lists.size(usuarios)} == 1 ? ' conta encontrada' : ' contas encontradas')">
+        0 contas
+    </p>
+
+    <div th:if="${#lists.isEmpty(usuarios)}" class="vazio">
+        <p class="mb-0">Nenhuma conta corresponde aos filtros aplicados.</p>
+    </div>
+
+    <div class="card" th:unless="${#lists.isEmpty(usuarios)}">
+        <div class="table-responsive">
+            <table class="table tabela-admin align-middle mb-0">
+                <thead>
+                <tr>
+                    <th scope="col">Usuário</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Acesso</th>
+                    <th scope="col">Cadastro</th>
+                    <th scope="col" class="text-end">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${usuarios}" th:classappend="${!u.ativo} ? 'linha-inativa'">
+
+                    <td>
+                        <span class="fw-semibold d-block" th:text="${u.nome}">Nome</span>
+                        <span class="small text-secondary" th:text="${u.email}">email</span>
+                    </td>
+
+                    <td>
+                        <span class="perfil-badge"
+                              th:classappend="'perfil-' + ${#strings.toLowerCase(u.perfil)}"
+                              th:switch="${u.perfil.name()}">
+                            <th:block th:case="'RESPONSAVEL'">Responsável</th:block>
+                            <th:block th:case="'VETERINARIO'">Veterinário</th:block>
+                            <th:block th:case="*">Administrador</th:block>
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="conta-status"
+                              th:classappend="${u.ativo} ? 'conta-ativa' : 'conta-inativa'"
+                              th:text="${u.ativo} ? 'Ativa' : 'Desativada'">Ativa</span>
+                    </td>
+
+                    <td class="small text-secondary"
+                        th:text="${#temporals.format(u.criadoEm, 'dd/MM/yyyy')}">data</td>
+
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+
+                            <a th:if="${u.responsavelId != null}"
+                               th:href="@{/admin/responsaveis/{id}/editar(id=${u.responsavelId})}"
+                               class="btn btn-sm btn-outline-secondary">Editar dados</a>
+
+                            <a th:if="${u.veterinarioId != null}"
+                               th:href="@{/admin/veterinarios/{id}/editar(id=${u.veterinarioId})}"
+                               class="btn btn-sm btn-outline-secondary">Editar dados</a>
+
+                            <!-- A própria conta não tem botão: o service também recusa -->
+                            <span th:if="${u.id == #authentication.principal.id}"
+                                  class="small text-secondary">Sua conta</span>
+
+                            <form th:unless="${u.id == #authentication.principal.id}"
+                                  th:action="@{/admin/usuarios/{id}/status(id=${u.id})}"
+                                  method="post" class="m-0"
+                                  th:data-nome="${u.nome}"
+                                  th:data-acao="${u.ativo} ? 'desativar' : 'reativar'"
+                                  onsubmit="return confirmarAlteracaoDeAcesso(this)">
+                                <input type="hidden" name="perfil" th:value="${perfilSelecionado}">
+                                <input type="hidden" name="busca" th:value="${busca}">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${u.ativo} ? 'btn-outline-danger' : 'btn-outline-primary'"
+                                        th:text="${u.ativo} ? 'Desativar' : 'Reativar'">Desativar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>
