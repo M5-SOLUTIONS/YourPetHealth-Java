@@ -7,62 +7,111 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<main class="container"
+      th:with="hoje=${#temporals.createToday()},
+               totalAgendadas=${#lists.size(consultas.?[status.name() == 'AGENDADA'])},
+               totalRealizadas=${#lists.size(consultas.?[status.name() == 'REALIZADA'])},
+               totalCanceladas=${#lists.size(consultas.?[status.name() == 'CANCELADA'])}">
 
     <div th:replace="~{layout :: mensagens}"></div>
 
-    <h1 class="mb-4">Agenda</h1>
-
-    <!-- GET simples: a data vai como query param -->
-    <form th:action="@{/vet/agenda}" method="get" class="row g-2 align-items-end mb-4"
-          style="max-width: 26rem">
-        <div class="col">
-            <label for="data" class="form-label">Dia</label>
-            <input type="date" id="data" name="data" class="form-control"
-                   th:value="${#temporals.format(data, 'yyyy-MM-dd')}">
+    <header class="pagina-topo">
+        <div>
+            <span class="sobretitulo"
+                  th:text="${data.isEqual(hoje)} ? 'Hoje'
+                           : (${data.isEqual(hoje.plusDays(1))} ? 'Amanhã'
+                           : (${data.isEqual(hoje.minusDays(1))} ? 'Ontem' : 'Agenda do dia'))">Hoje</span>
+            <h1 th:text="${#temporals.format(data, 'dd/MM/yyyy')}">00/00/0000</h1>
+            <p class="pagina-subtitulo"
+               th:text="${#lists.isEmpty(consultas)} ? 'Nenhuma consulta neste dia.'
+                        : (${#lists.size(consultas)} == 1 ? '1 consulta neste dia.'
+                        : ${#lists.size(consultas)} + ' consultas neste dia.')">Resumo</p>
         </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Ver agenda</button>
+
+        <!-- GET simples: a data vai como query param -->
+        <div class="navegacao-dia">
+            <a th:href="@{/vet/agenda(data=${data.minusDays(1)})}"
+               class="btn btn-outline-secondary" aria-label="Dia anterior" title="Dia anterior">‹</a>
+
+            <form th:action="@{/vet/agenda}" method="get" class="d-flex gap-2 m-0">
+                <label for="data" class="visually-hidden">Escolher dia</label>
+                <input type="date" id="data" name="data" class="form-control"
+                       th:value="${data}" data-enviar-ao-mudar>
+                <noscript><button type="submit" class="btn btn-primary">Ver</button></noscript>
+            </form>
+
+            <a th:href="@{/vet/agenda(data=${data.plusDays(1)})}"
+               class="btn btn-outline-secondary" aria-label="Próximo dia" title="Próximo dia">›</a>
+
+            <a th:unless="${data.isEqual(hoje)}" th:href="@{/vet/agenda}"
+               class="btn btn-primary">Hoje</a>
         </div>
-    </form>
+    </header>
 
-    <h2 class="mb-3" th:text="${#temporals.format(data, 'dd/MM/yyyy')}">data</h2>
-
-    <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
-        <p class="mb-0">Nenhuma consulta agendada para este dia.</p>
-    </div>
-
-    <div class="list-group" th:unless="${#lists.isEmpty(consultas)}">
-        <div class="list-group-item" th:each="c : ${consultas}">
-
-            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-
-                <div class="d-flex gap-3 align-items-start">
-                    <p class="fs-5 fw-semibold mb-0"
-                       th:text="${#temporals.format(c.data, 'HH:mm')}">00:00</p>
-
-                    <div>
-                        <p class="mb-1 fw-semibold" th:text="${c.petNome}">Pet</p>
-                        <p class="mb-1 small text-secondary">
-                            <span th:text="${c.tipo}">TIPO</span>
-                            <span th:if="${c.descricao}" th:text="' · ' + ${c.descricao}"></span>
-                        </p>
-                        <p class="mb-0 small" th:if="${c.observacoes}"
-                           th:text="${c.observacoes}">observações</p>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 align-items-center">
-                    <span class="status"
-                          th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
-                          th:text="${c.status}">STATUS</span>
-
-                    <a th:if="${c.status.name() == 'AGENDADA'}"
-                       th:href="@{/vet/atender/{id}(id=${c.id})}"
-                       class="btn btn-sm btn-primary">Atender</a>
+    <!-- ---------- Resumo do dia ---------- -->
+    <div class="row g-3 mb-4" th:unless="${#lists.isEmpty(consultas)}">
+        <div class="col-4">
+            <div class="card kpi h-100 kpi-destaque">
+                <div class="card-body">
+                    <p class="kpi-rotulo">A atender</p>
+                    <p class="kpi-valor mb-0" th:text="${totalAgendadas}">0</p>
                 </div>
             </div>
         </div>
+        <div class="col-4">
+            <div class="card kpi h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Realizadas</p>
+                    <p class="kpi-valor mb-0" th:text="${totalRealizadas}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card kpi h-100">
+                <div class="card-body">
+                    <p class="kpi-rotulo">Canceladas</p>
+                    <p class="kpi-valor mb-0" th:text="${totalCanceladas}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Agenda livre</p>
+        <p class="vazio-texto">Nenhuma consulta marcada para este dia. Use as setas para ver outros dias.</p>
+    </div>
+
+    <div class="lista-consultas" th:unless="${#lists.isEmpty(consultas)}">
+        <article class="agenda-item" th:each="c : ${consultas}"
+                 th:classappend="'agenda-' + ${#strings.toLowerCase(c.status)}">
+
+            <time class="agenda-hora" th:datetime="${c.data}"
+                  th:text="${#temporals.format(c.data, 'HH:mm')}">00:00</time>
+
+            <div class="agenda-corpo">
+                <p class="agenda-pet" th:text="${c.petNome}">Pet</p>
+                <p class="mb-0 small text-secondary">
+                    <th:block th:replace="~{layout :: tipo(${c.tipo})}"></th:block>
+                    <span th:if="${c.descricao}" th:text="'· ' + ${c.descricao}"></span>
+                </p>
+                <p class="observacoes" th:if="${c.observacoes}">
+                    <span class="observacoes-rotulo">Suas observações</span>
+                    <span th:text="${c.observacoes}">observações</span>
+                </p>
+            </div>
+
+            <div class="agenda-lado">
+                <span th:replace="~{layout :: status(${c.status})}"></span>
+
+                <a th:if="${c.status.name() == 'AGENDADA'}"
+                   th:href="@{/vet/atender/{id}(id=${c.id})}"
+                   class="btn btn-sm btn-primary">Atender</a>
+                <a th:if="${c.status.name() == 'REALIZADA'}"
+                   th:href="@{/vet/atender/{id}(id=${c.id})}"
+                   class="btn btn-sm btn-outline-secondary">Ver ficha</a>
+            </div>
+        </article>
     </div>
 </main>
 

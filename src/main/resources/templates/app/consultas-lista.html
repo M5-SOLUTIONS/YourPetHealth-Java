@@ -7,81 +7,131 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<main class="container"
+      th:with="totalAgendadas=${#lists.size(consultas.?[status.name() == 'AGENDADA'])},
+               totalRealizadas=${#lists.size(consultas.?[status.name() == 'REALIZADA'])},
+               totalCanceladas=${#lists.size(consultas.?[status.name() == 'CANCELADA'])}">
 
     <div th:replace="~{layout :: mensagens}"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Consultas</h1>
+    <header class="pagina-topo">
+        <div>
+            <h1>Consultas</h1>
+            <p class="pagina-subtitulo">Todas as consultas dos seus pets, agendadas e passadas.</p>
+        </div>
         <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar consulta</a>
-    </div>
+    </header>
 
     <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
-        <p class="mb-3">Nenhuma consulta registrada.</p>
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Nenhuma consulta registrada</p>
+        <p class="vazio-texto">Escolha o pet, o veterinário e o horário. A disponibilidade é conferida na hora.</p>
         <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar a primeira</a>
     </div>
 
-    <div class="row g-3" th:unless="${#lists.isEmpty(consultas)}">
-        <div class="col-lg-6" th:each="c : ${consultas}">
-            <div class="card h-100">
-                <div class="card-body">
+    <th:block th:unless="${#lists.isEmpty(consultas)}">
 
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h2 class="mb-0" th:text="${c.petNome}">Pet</h2>
-                        <span class="status"
-                              th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
-                              th:text="${c.status}">STATUS</span>
+        <!-- Filtro feito no navegador sobre a lista já carregada (app.js) -->
+        <div class="filtros" role="group" aria-label="Filtrar por status">
+            <button type="button" class="filtro ativo" aria-pressed="true"
+                    data-filtro-alvo="#listaConsultas" data-filtro="TODAS">
+                Todas <span class="contador" th:text="${#lists.size(consultas)}">0</span>
+            </button>
+            <button type="button" class="filtro" aria-pressed="false"
+                    data-filtro-alvo="#listaConsultas" data-filtro="AGENDADA">
+                Agendadas <span class="contador" th:text="${totalAgendadas}">0</span>
+            </button>
+            <button type="button" class="filtro" aria-pressed="false"
+                    data-filtro-alvo="#listaConsultas" data-filtro="REALIZADA">
+                Realizadas <span class="contador" th:text="${totalRealizadas}">0</span>
+            </button>
+            <button type="button" class="filtro" aria-pressed="false"
+                    data-filtro-alvo="#listaConsultas" data-filtro="CANCELADA">
+                Canceladas <span class="contador" th:text="${totalCanceladas}">0</span>
+            </button>
+        </div>
+
+        <div id="listaConsultas" class="row g-3">
+            <div class="col-lg-6" th:each="c : ${consultas}" th:data-status="${c.status.name()}">
+                <article class="card h-100">
+                    <div class="card-body consulta-card"
+                         th:classappend="${c.status.name() != 'AGENDADA'} ? 'consulta-encerrada'">
+
+                        <div class="data-bloco">
+                            <span class="data-bloco-dia" th:text="${#temporals.format(c.data, 'dd/MM')}">00/00</span>
+                            <span class="data-bloco-hora" th:text="${#temporals.format(c.data, 'HH:mm')}">00:00</span>
+                            <span class="data-bloco-ano" th:text="${#temporals.format(c.data, 'yyyy')}">0000</span>
+                        </div>
+
+                        <div class="consulta-card-corpo">
+                            <div class="consulta-card-topo">
+                                <h2 class="consulta-card-titulo">
+                                    <a th:href="@{/app/pets/{id}(id=${c.petId})}"
+                                       class="link-body-emphasis text-decoration-none"
+                                       th:text="${c.petNome}">Pet</a>
+                                </h2>
+                                <span th:replace="~{layout :: status(${c.status})}"></span>
+                            </div>
+
+                            <p class="mb-1 fw-semibold small">
+                                <th:block th:replace="~{layout :: tipo(${c.tipo})}"></th:block>
+                            </p>
+                            <p class="mb-0 small text-secondary">
+                                <span th:text="${c.veterinarioNome}">Veterinário</span>
+                                <span th:if="${c.veterinarioEspecialidade}"
+                                      th:text="'· ' + ${c.veterinarioEspecialidade}"></span>
+                            </p>
+
+                            <p class="small mt-2 mb-0" th:if="${c.descricao}">
+                                <span class="text-secondary">Motivo:</span>
+                                <span th:text="${c.descricao}">descrição</span>
+                            </p>
+
+                            <p class="observacoes" th:if="${c.observacoes}">
+                                <span class="observacoes-rotulo">Observações do veterinário</span>
+                                <span th:text="${c.observacoes}">obs</span>
+                            </p>
+
+                            <!-- podeEditar e podeCancelar vêm calculados da API;
+                                 a regra das 24 horas não é replicada aqui. -->
+                            <div class="consulta-acoes" th:if="${c.status.name() == 'AGENDADA'}">
+
+                                <a th:if="${c.podeEditar}"
+                                   th:href="@{/app/consultas/{id}/editar(id=${c.id})}"
+                                   class="btn btn-sm btn-outline-secondary">Reagendar</a>
+
+                                <!-- Cancelar mantém o registro com status CANCELADA -->
+                                <form th:if="${c.podeCancelar}"
+                                      th:action="@{/app/consultas/{id}/cancelar(id=${c.id})}"
+                                      method="post" class="m-0"
+                                      data-confirmar="Cancelar esta consulta? O registro será mantido com status Cancelada.">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                                </form>
+
+                                <!-- Excluir apaga o registro -->
+                                <form th:action="@{/app/consultas/{id}/remover(id=${c.id})}"
+                                      method="post" class="m-0 ms-auto"
+                                      data-confirmar="Excluir esta consulta? O registro será apagado permanentemente.">
+                                    <button type="submit" class="btn btn-sm btn-texto-perigo">Excluir</button>
+                                </form>
+
+                                <p class="aviso-regra w-100 mb-0"
+                                   th:unless="${c.podeEditar or c.podeCancelar}">
+                                    Faltam menos de 24 horas para a consulta:
+                                    reagendar e cancelar não estão mais disponíveis.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-
-                    <p class="text-secondary mb-2">
-                        <span th:text="${c.tipo}">TIPO</span> ·
-                        <span th:text="${c.veterinarioNome}">Veterinário</span>
-                        <span th:if="${c.veterinarioEspecialidade}"
-                              th:text="' (' + ${c.veterinarioEspecialidade} + ')'"></span>
-                    </p>
-
-                    <p class="mb-2"
-                       th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
-
-                    <p class="small text-secondary mb-3" th:if="${c.descricao}"
-                       th:text="${c.descricao}">descrição</p>
-
-                    <p class="small mb-3" th:if="${c.observacoes}">
-                        <span class="fw-semibold">Observações do veterinário:</span>
-                        <span th:text="${c.observacoes}">obs</span>
-                    </p>
-
-                    <!-- podeEditar e podeCancelar vêm calculados da API.
-                         A regra das 24h não é replicada aqui. -->
-                    <div class="d-flex gap-2 flex-wrap">
-
-                        <a th:if="${c.podeEditar}"
-                           th:href="@{/app/consultas/{id}/editar(id=${c.id})}"
-                           class="btn btn-sm btn-outline-secondary">Reagendar</a>
-
-                        <!-- Cancelar mantém o registro com status CANCELADA -->
-                        <form th:if="${c.podeCancelar}"
-                              th:action="@{/app/consultas/{id}/cancelar(id=${c.id})}"
-                              method="post" class="m-0"
-                              onsubmit="return confirm('Cancelar esta consulta? O registro será mantido no histórico.')">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
-                        </form>
-
-                        <!-- Excluir apaga o registro -->
-                        <form th:if="${c.status.name() == 'AGENDADA'}"
-                              th:action="@{/app/consultas/{id}/remover(id=${c.id})}"
-                              method="post" class="m-0"
-                              onsubmit="return confirm('Excluir esta consulta? O registro será apagado permanentemente.')">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
-                        </form>
-
-                        <a th:href="@{/app/pets/{id}(id=${c.petId})}"
-                           class="btn btn-sm btn-outline-primary">Ver pet</a>
-                    </div>
-                </div>
+                </article>
             </div>
         </div>
-    </div>
+
+        <div id="listaConsultas-vazio" class="vazio filtro-vazio mt-3" hidden>
+            <p class="vazio-titulo">Nenhuma consulta com este status</p>
+            <p class="vazio-texto">Escolha outro filtro para ver as demais consultas.</p>
+        </div>
+    </th:block>
 </main>
 
 <footer th:replace="~{layout :: footer}"></footer>

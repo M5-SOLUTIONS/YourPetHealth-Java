@@ -9,84 +9,113 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<!-- O nome do responsável vem do próprio pet; sem pets, a saudação fica genérica -->
+<main class="container"
+      th:with="nomeResponsavel=${#lists.isEmpty(pets)} ? null : ${pets[0].responsavelNome},
+               totalProximas=${#lists.size(proximasConsultas)}">
 
     <div th:replace="~{layout :: mensagens}"></div>
 
-    <h1 class="mb-4">Olá, <span sec:authentication="name">você</span></h1>
+    <!-- ---------- Boas-vindas ---------- -->
+    <section class="destaque">
+        <span class="sobretitulo">Painel do responsável</span>
 
-    <!-- ---------- Resumo ---------- -->
-    <div class="row g-3 mb-5">
-        <div class="col-sm-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="card-titulo-secao">Pets cadastrados</p>
-                    <p class="display-6 mb-0" th:text="${totalPets}">0</p>
-                </div>
+        <h1 th:if="${nomeResponsavel}"
+            th:text="|Olá, ${#strings.arraySplit(nomeResponsavel, ' ')[0]}|">Olá</h1>
+        <h1 th:unless="${nomeResponsavel}">Olá! Que bom ter você aqui</h1>
+
+        <p class="mb-0" th:if="${totalProximas > 0}"
+           th:text="${totalProximas == 1}
+                    ? 'Você tem 1 consulta nas próximas 48 horas.'
+                    : |Você tem ${totalProximas} consultas nas próximas 48 horas.|">
+            Resumo
+        </p>
+        <p class="mb-0" th:if="${totalProximas == 0 and totalPets > 0}">
+            Nenhuma consulta nas próximas 48 horas. Tudo tranquilo por aqui.
+        </p>
+        <p class="mb-0" th:if="${totalPets == 0}">
+            Comece cadastrando seu primeiro pet para agendar consultas.
+        </p>
+
+        <div class="destaque-numeros">
+            <div class="destaque-numero">
+                <strong th:text="${totalPets}">0</strong>
+                <span th:text="${totalPets == 1} ? 'pet cadastrado' : 'pets cadastrados'">pets</span>
+            </div>
+            <div class="destaque-numero">
+                <strong th:text="${totalProximas}">0</strong>
+                <span>nas próximas 48h</span>
             </div>
         </div>
-        <div class="col-sm-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <p class="card-titulo-secao">Consultas nas próximas 48 horas</p>
-                    <p class="display-6 mb-0" th:text="${#lists.size(proximasConsultas)}">0</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ---------- Próximas consultas ---------- -->
-    <section class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Próximas consultas</h2>
-            <a th:href="@{/app/consultas}" class="btn btn-sm btn-outline-primary">Ver todas</a>
-        </div>
-
-        <div th:if="${#lists.isEmpty(proximasConsultas)}" class="vazio">
-            <p class="mb-3">Nenhuma consulta nas próximas 48 horas.</p>
-            <a th:href="@{/app/consultas/nova}" class="btn btn-primary">Agendar consulta</a>
-        </div>
-
-        <div class="list-group" th:unless="${#lists.isEmpty(proximasConsultas)}">
-            <div class="list-group-item d-flex justify-content-between align-items-center"
-                 th:each="c : ${proximasConsultas}">
-                <div>
-                    <p class="mb-1 fw-semibold" th:text="${c.petNome}">Pet</p>
-                    <p class="mb-0 small text-secondary">
-                        <span th:text="${c.veterinarioNome}">Veterinário</span> ·
-                        <span th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</span>
-                    </p>
-                </div>
-                <span class="status status-agendada" th:text="${c.tipo}">TIPO</span>
-            </div>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a th:if="${totalPets > 0}" th:href="@{/app/consultas/nova}"
+               class="btn btn-claro">Agendar consulta</a>
+            <a th:href="@{/app/pets/novo}"
+               th:class="${totalPets > 0} ? 'btn btn-contorno-claro' : 'btn btn-claro'">
+                Cadastrar pet
+            </a>
         </div>
     </section>
 
-    <!-- ---------- Pets ---------- -->
-    <section>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Seus pets</h2>
-            <a th:href="@{/app/pets}" class="btn btn-sm btn-outline-primary">Ver todos</a>
-        </div>
+    <div class="row g-4">
 
-        <div th:if="${#lists.isEmpty(pets)}" class="vazio">
-            <p class="mb-3">Você ainda não cadastrou nenhum pet.</p>
-            <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
-        </div>
+        <!-- ---------- Próximas consultas ---------- -->
+        <section class="col-lg-7">
+            <div class="secao-topo">
+                <h2>Próximas consultas <span class="contador" th:text="${totalProximas}">0</span></h2>
+                <a th:href="@{/app/consultas}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+            </div>
 
-        <div class="row g-3" th:unless="${#lists.isEmpty(pets)}">
-            <div class="col-md-4" th:each="p : ${pets}">
-                <a th:href="@{/app/pets/{id}(id=${p.id})}"
-                   class="card h-100 text-decoration-none text-body">
-                    <div class="card-body">
-                        <p class="fw-semibold mb-1" th:text="${p.nome}">Nome</p>
-                        <p class="small text-secondary mb-0"
-                           th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+            <div th:if="${totalProximas == 0}" class="vazio">
+                <span th:replace="~{layout :: icone-vazio}"></span>
+                <p class="vazio-titulo">Agenda livre</p>
+                <p class="vazio-texto">Aqui aparecem as consultas marcadas para as próximas 48 horas.</p>
+                <a th:if="${totalPets > 0}" th:href="@{/app/consultas/nova}"
+                   class="btn btn-primary">Agendar consulta</a>
+            </div>
+
+            <div class="lista-consultas" th:unless="${totalProximas == 0}">
+                <a th:each="c : ${proximasConsultas}"
+                   th:href="@{/app/pets/{id}(id=${c.petId})}"
+                   class="card-link rounded-3">
+                    <div th:replace="~{layout :: item-consulta(${c})}"></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ---------- Pets ---------- -->
+        <section class="col-lg-5">
+            <div class="secao-topo">
+                <h2>Seus pets <span class="contador" th:text="${totalPets}">0</span></h2>
+                <a th:href="@{/app/pets}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+            </div>
+
+            <div th:if="${totalPets == 0}" class="vazio">
+                <span th:replace="~{layout :: icone-vazio}"></span>
+                <p class="vazio-titulo">Nenhum pet ainda</p>
+                <p class="vazio-texto">Cadastre seu pet para acompanhar consultas e histórico clínico.</p>
+                <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
+            </div>
+
+            <div class="lista-consultas" th:unless="${totalPets == 0}">
+                <a th:each="p : ${pets}"
+                   th:href="@{/app/pets/{id}(id=${p.id})}"
+                   class="card card-link">
+                    <div class="card-body d-flex align-items-center gap-3 py-3">
+                        <span th:replace="~{layout :: avatar(${p.nome}, '')}"></span>
+                        <div class="flex-grow-1 min-w-0">
+                            <p class="mb-0 fw-semibold" th:text="${p.nome}">Nome</p>
+                            <p class="mb-0 small text-secondary"
+                               th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+                        </div>
+                        <span class="small proxima text-end" th:if="${p.proximaConsulta}"
+                              th:text="${#temporals.format(p.proximaConsulta, 'dd/MM HH:mm')}">data</span>
                     </div>
                 </a>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 </main>
 
 <footer th:replace="~{layout :: footer}"></footer>
