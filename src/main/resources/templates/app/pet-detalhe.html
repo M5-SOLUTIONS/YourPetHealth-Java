@@ -7,82 +7,112 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<main class="container"
+      th:with="agendadas=${consultas.?[status.name() == 'AGENDADA']},
+               anteriores=${consultas.?[status.name() != 'AGENDADA']}">
 
     <div th:replace="~{layout :: mensagens}"></div>
 
-    <nav aria-label="Você está em" class="mb-3">
+    <nav aria-label="Você está em">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/app/pets}">Meus pets</a></li>
             <li class="breadcrumb-item active" aria-current="page" th:text="${pet.nome}">Pet</li>
         </ol>
     </nav>
 
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-        <div>
-            <h1 class="mb-1" th:text="${pet.nome}">Nome</h1>
-            <p class="text-secondary mb-0">
-                <span th:text="${pet.raca} ?: 'Raça não informada'">Raça</span> ·
-                <span th:text="${pet.sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</span> ·
-                <span th:text="${pet.idade} + (${pet.idade} == 1 ? ' ano' : ' anos')">idade</span>
-                <span th:if="${pet.peso}" th:text="' · ' + ${pet.peso} + ' kg'"></span>
-            </p>
+    <!-- ---------- Ficha ---------- -->
+    <section class="destaque">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <span th:replace="~{layout :: avatar(${pet.nome}, 'avatar-grande')}"></span>
+            <div class="min-w-0">
+                <span class="sobretitulo">Ficha do pet</span>
+                <h1 class="text-truncate" th:text="${pet.nome}">Nome</h1>
+                <p class="mb-0" th:text="${pet.raca} ?: 'Raça não informada'">Raça</p>
+            </div>
         </div>
 
-        <div class="d-flex gap-2 flex-wrap">
-            <a th:href="@{/app/consultas/nova(petId=${pet.id})}"
-               class="btn btn-primary">Agendar consulta</a>
-            <a th:href="@{/app/pets/{id}/historico(id=${pet.id})}"
-               class="btn btn-outline-primary">Histórico clínico</a>
-            <a th:href="@{/app/pets/{id}/editar(id=${pet.id})}"
-               class="btn btn-outline-secondary">Editar</a>
-        </div>
-    </div>
-
-    <section>
-        <h2 class="mb-3">Consultas</h2>
-
-        <div th:if="${#lists.isEmpty(consultas)}" class="vazio">
-            <p class="mb-3" th:text="|${pet.nome} ainda não tem consultas registradas.|"></p>
-            <a th:href="@{/app/consultas/nova(petId=${pet.id})}"
-               class="btn btn-primary">Agendar a primeira</a>
+        <div class="pet-meta mt-3 mb-0">
+            <span class="etiqueta"><th:block th:replace="~{layout :: sexo(${pet.sexo})}"></th:block></span>
+            <span class="etiqueta"
+                  th:text="${pet.idade} + (${pet.idade} == 1 ? ' ano' : ' anos')">idade</span>
+            <span class="etiqueta" th:if="${pet.peso}"
+                  th:text="${#numbers.formatDecimal(pet.peso, 1, 'POINT', 1, 'COMMA')} + ' kg'">peso</span>
         </div>
 
-        <div class="list-group" th:unless="${#lists.isEmpty(consultas)}">
-            <div class="list-group-item" th:each="c : ${consultas}">
+        <div class="destaque-numeros">
+            <div class="destaque-numero">
+                <strong th:text="${pet.totalConsultas}">0</strong>
+                <span th:text="${pet.totalConsultas == 1} ? 'consulta no total' : 'consultas no total'">consultas</span>
+            </div>
+            <div class="destaque-numero">
+                <strong th:if="${pet.proximaConsulta}"
+                        th:text="${#temporals.format(pet.proximaConsulta, 'dd/MM HH:mm')}">data</strong>
+                <strong th:unless="${pet.proximaConsulta}">—</strong>
+                <span>próxima consulta</span>
+            </div>
+        </div>
 
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                        <p class="mb-1">
-                            <span class="fw-semibold" th:text="${c.tipo}">TIPO</span>
-                            <span class="text-secondary"
-                                  th:text="' · ' + ${c.veterinarioNome}">vet</span>
-                        </p>
-                        <p class="mb-1 small text-secondary"
-                           th:text="${#temporals.format(c.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
-                        <p class="mb-0 small" th:if="${c.observacoes}"
-                           th:text="${c.observacoes}">observações</p>
-                    </div>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a th:href="@{/app/consultas/nova(petId=${pet.id})}" class="btn btn-claro">Agendar consulta</a>
+            <a th:href="@{/app/pets/{id}/historico(id=${pet.id})}" class="btn btn-contorno-claro">Histórico clínico</a>
+            <a th:href="@{/app/pets/{id}/editar(id=${pet.id})}" class="btn btn-contorno-claro">Editar dados</a>
+        </div>
+    </section>
 
-                    <span class="status"
-                          th:classappend="'status-' + ${#strings.toLowerCase(c.status)}"
-                          th:text="${c.status}">STATUS</span>
-                </div>
+    <!-- ---------- Consultas agendadas ---------- -->
+    <section class="secao">
+        <div class="secao-topo">
+            <h2>Agendadas <span class="contador" th:text="${#lists.size(agendadas)}">0</span></h2>
+            <a th:href="@{/app/consultas}" class="btn btn-sm btn-outline-secondary"
+               th:unless="${#lists.isEmpty(agendadas)}">Gerenciar consultas</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(agendadas)}" class="vazio">
+            <span th:replace="~{layout :: icone-vazio}"></span>
+            <p class="vazio-titulo">Nenhuma consulta agendada</p>
+            <p class="vazio-texto" th:text="|Que tal marcar o próximo check-up de ${pet.nome}?|">Texto</p>
+            <a th:href="@{/app/consultas/nova(petId=${pet.id})}" class="btn btn-primary">Agendar consulta</a>
+        </div>
+
+        <div class="lista-consultas" th:unless="${#lists.isEmpty(agendadas)}">
+            <!-- th:replace roda antes do th:each, por isso o laço fica no th:block -->
+            <th:block th:each="c : ${agendadas}">
+                <div th:replace="~{layout :: item-consulta(${c})}"></div>
+            </th:block>
+        </div>
+    </section>
+
+    <!-- ---------- Consultas anteriores ---------- -->
+    <section class="secao" th:unless="${#lists.isEmpty(anteriores)}">
+        <div class="secao-topo">
+            <h2>Anteriores <span class="contador" th:text="${#lists.size(anteriores)}">0</span></h2>
+        </div>
+
+        <div class="lista-consultas">
+            <div class="item-consulta-grupo" th:each="c : ${anteriores}">
+                <div th:replace="~{layout :: item-consulta(${c})}"></div>
+                <p class="observacoes" th:if="${c.observacoes}">
+                    <span class="observacoes-rotulo">Observações do veterinário</span>
+                    <span th:text="${c.observacoes}">obs</span>
+                </p>
             </div>
         </div>
     </section>
 
-    <section class="mt-5 pt-4 border-top">
-        <form th:action="@{/app/pets/{id}/remover(id=${pet.id})}" method="post"
-              th:data-nome="${pet.nome}"
-              onsubmit="return confirmarRemocao(this)">
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-                Remover este pet
-            </button>
-            <span class="small text-secondary ms-2">
-                Não é possível remover um pet com consultas agendadas.
-            </span>
-        </form>
+    <!-- ---------- Remoção, separada das ações principais ---------- -->
+    <section class="card border-0 card-suave">
+        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <p class="fw-semibold mb-1">Remover este pet</p>
+                <p class="small text-secondary mb-0">
+                    Não é possível remover um pet com consultas agendadas ou com histórico clínico.
+                </p>
+            </div>
+            <form th:action="@{/app/pets/{id}/remover(id=${pet.id})}" method="post" class="m-0"
+                  th:data-nome="${pet.nome}" data-remover>
+                <button type="submit" class="btn btn-outline-danger btn-sm">Remover pet</button>
+            </form>
+        </div>
     </section>
 </main>
 

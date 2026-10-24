@@ -11,58 +11,75 @@
 
     <div th:replace="~{layout :: mensagens}"></div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Meus pets</h1>
+    <header class="pagina-topo">
+        <div>
+            <h1>Meus pets <span class="contador" th:text="${#lists.size(pets)}">0</span></h1>
+            <p class="pagina-subtitulo">Dados, consultas e histórico clínico de cada um.</p>
+        </div>
         <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar pet</a>
-    </div>
+    </header>
 
     <div th:if="${#lists.isEmpty(pets)}" class="vazio">
-        <p class="mb-3">Você ainda não cadastrou nenhum pet.</p>
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Você ainda não cadastrou nenhum pet</p>
+        <p class="vazio-texto">
+            Com o pet cadastrado, você agenda consultas e acompanha o histórico clínico dele.
+        </p>
         <a th:href="@{/app/pets/novo}" class="btn btn-primary">Cadastrar o primeiro</a>
     </div>
 
     <div class="row g-3" th:unless="${#lists.isEmpty(pets)}">
-        <div class="col-md-6" th:each="p : ${pets}">
-            <div class="card h-100">
+        <div class="col-md-6 col-xl-4" th:each="p : ${pets}">
+            <article class="card pet-card h-100">
                 <div class="card-body">
 
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h2 class="mb-0" th:text="${p.nome}">Nome</h2>
-                        <span class="status status-agendada" th:text="${p.sexo}">SEXO</span>
+                    <div class="pet-card-topo">
+                        <span th:replace="~{layout :: avatar(${p.nome}, '')}"></span>
+                        <div class="min-w-0">
+                            <h2 class="pet-card-nome text-truncate">
+                                <a th:href="@{/app/pets/{id}(id=${p.id})}"
+                                   class="link-body-emphasis text-decoration-none"
+                                   th:text="${p.nome}">Nome</a>
+                            </h2>
+                            <p class="mb-0 small text-secondary"
+                               th:text="${p.raca} ?: 'Raça não informada'">Raça</p>
+                        </div>
                     </div>
 
-                    <p class="text-secondary mb-3">
-                        <span th:text="${p.raca} ?: 'Raça não informada'">Raça</span> ·
-                        <span th:text="${p.idade} + (${p.idade} == 1 ? ' ano' : ' anos')">idade</span>
-                        <span th:if="${p.peso}" th:text="' · ' + ${p.peso} + ' kg'"></span>
-                    </p>
+                    <div class="pet-meta">
+                        <span class="etiqueta"><th:block th:replace="~{layout :: sexo(${p.sexo})}"></th:block></span>
+                        <span class="etiqueta"
+                              th:text="${p.idade} + (${p.idade} == 1 ? ' ano' : ' anos')">idade</span>
+                        <span class="etiqueta" th:if="${p.peso}"
+                              th:text="${#numbers.formatDecimal(p.peso, 1, 'POINT', 1, 'COMMA')} + ' kg'">peso</span>
+                    </div>
 
-                    <p class="small mb-3">
-                        <span th:text="${p.totalConsultas}">0</span>
-                        <span th:text="${p.totalConsultas} == 1 ? 'consulta' : 'consultas'">consultas</span>
-                        <span th:if="${p.proximaConsulta}" class="text-secondary">
-                            · próxima em
-                            <span th:text="${#temporals.format(p.proximaConsulta, 'dd/MM ''às'' HH:mm')}">data</span>
+                    <div class="pet-card-rodape">
+                        <span th:text="${p.totalConsultas} + (${p.totalConsultas} == 1 ? ' consulta' : ' consultas')">
+                            0 consultas
                         </span>
-                    </p>
+                        <span th:if="${p.proximaConsulta}">
+                            · próxima
+                            <span class="proxima"
+                                  th:text="${#temporals.format(p.proximaConsulta, 'dd/MM ''às'' HH:mm')}">data</span>
+                        </span>
+                        <span th:unless="${p.proximaConsulta}">· nenhuma agendada</span>
 
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a th:href="@{/app/pets/{id}(id=${p.id})}"
-                           class="btn btn-sm btn-outline-primary">Ver detalhes</a>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <a th:href="@{/app/pets/{id}(id=${p.id})}"
+                               class="btn btn-sm btn-primary">Ver ficha</a>
+                            <a th:href="@{/app/pets/{id}/editar(id=${p.id})}"
+                               class="btn btn-sm btn-outline-secondary">Editar</a>
 
-                        <a th:href="@{/app/pets/{id}/editar(id=${p.id})}"
-                           class="btn btn-sm btn-outline-secondary">Editar</a>
-
-                        <!-- DELETE precisa de POST para levar o token CSRF -->
-                        <form th:action="@{/app/pets/{id}/remover(id=${p.id})}" method="post"
-                              class="m-0"
-                              th:data-nome="${p.nome}"
-                              onsubmit="return confirmarRemocao(this)">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                        </form>
+                            <!-- DELETE vira POST para levar o token CSRF -->
+                            <form th:action="@{/app/pets/{id}/remover(id=${p.id})}" method="post"
+                                  class="m-0 ms-auto" th:data-nome="${p.nome}" data-remover>
+                                <button type="submit" class="btn btn-sm btn-texto-perigo">Remover</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </article>
         </div>
     </div>
 </main>

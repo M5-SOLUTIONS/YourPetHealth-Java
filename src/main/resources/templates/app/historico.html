@@ -9,7 +9,7 @@
 
 <main class="container">
 
-    <nav aria-label="Você está em" class="mb-3">
+    <nav aria-label="Você está em">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/app/pets}">Meus pets</a></li>
             <li class="breadcrumb-item">
@@ -19,28 +19,44 @@
         </ol>
     </nav>
 
-    <h1 class="mb-1">Histórico clínico</h1>
-    <p class="text-secondary mb-4" th:text="${pet.nome}">Pet</p>
+    <header class="pagina-topo">
+        <div class="d-flex align-items-center gap-3">
+            <span th:replace="~{layout :: avatar(${pet.nome}, '')}"></span>
+            <div>
+                <h1>Histórico clínico</h1>
+                <p class="pagina-subtitulo">
+                    <span th:text="${pet.nome}">Pet</span> ·
+                    <span th:text="${#lists.size(historicos)} + (${#lists.size(historicos)} == 1 ? ' registro' : ' registros')">0 registros</span>
+                </p>
+            </div>
+        </div>
+        <a th:href="@{/app/consultas/nova(petId=${pet.id})}" class="btn btn-primary">Agendar consulta</a>
+    </header>
 
     <div th:if="${#lists.isEmpty(historicos)}" class="vazio">
-        <p class="mb-0">
-            Nenhum registro ainda. O histórico é preenchido automaticamente
-            quando o veterinário conclui uma consulta.
+        <span th:replace="~{layout :: icone-vazio}"></span>
+        <p class="vazio-titulo">Nenhum registro ainda</p>
+        <p class="vazio-texto">
+            O histórico é preenchido automaticamente quando o veterinário conclui uma consulta.
         </p>
     </div>
 
-    <div class="list-group" th:unless="${#lists.isEmpty(historicos)}">
-        <div class="list-group-item" th:each="h : ${historicos}">
-
-            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                <span class="status status-realizada" th:text="${h.tipo}">TIPO</span>
-                <span class="small text-secondary"
-                      th:text="${#temporals.format(h.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</span>
+    <ol class="linha-tempo" th:unless="${#lists.isEmpty(historicos)}" style="max-width: 48rem">
+        <li class="linha-tempo-item" th:each="h : ${historicos}">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <span class="status status-realizada"
+                              th:text="${h.tipo.name() == 'CONSULTA'} ? 'Consulta' : ${h.tipo}">Consulta</span>
+                        <time class="linha-tempo-data"
+                              th:datetime="${h.data}"
+                              th:text="${#temporals.format(h.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</time>
+                    </div>
+                    <p class="linha-tempo-texto" th:text="${h.descricao}">Descrição do atendimento</p>
+                </div>
             </div>
-
-            <p class="mb-0" th:text="${h.descricao}">Descrição do atendimento</p>
-        </div>
-    </div>
+        </li>
+    </ol>
 </main>
 
 <footer th:replace="~{layout :: footer}"></footer>
