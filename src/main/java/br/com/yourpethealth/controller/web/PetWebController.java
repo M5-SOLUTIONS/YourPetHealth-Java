@@ -59,6 +59,19 @@ public class PetWebController {
         return "app/pets-form";
     }
 
+    @GetMapping("/{id}")
+    public String detalhe(@PathVariable Long id, Model model) {
+        var pet = petService.buscarPorId(id);
+
+        var consultas = consultaService.listar().stream()
+                .filter(c -> c.petId().equals(id))
+                .toList();
+
+        model.addAttribute("pet", pet);
+        model.addAttribute("consultas", consultas);
+        return "app/pet-detalhe";
+    }
+
     @PostMapping("/{id}")
     public String atualizar(@PathVariable Long id,
                             @Valid @ModelAttribute("form") PetForm form,

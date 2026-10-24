@@ -22,6 +22,9 @@
 
         <a sec:authorize="hasRole('VETERINARIO')"
            th:href="@{/vet/agenda}" class="btn btn-primary">Voltar à agenda</a>
+
+        <a sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/dashboard}" class="btn btn-primary">Voltar ao dashboard</a>
     </div>
 </main>
 
