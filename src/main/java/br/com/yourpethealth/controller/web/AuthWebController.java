@@ -63,9 +63,4 @@ public class AuthWebController {
     public String acessoNegado() {
         return "403";
     }
-
-    @ModelAttribute("perfis")
-    public Perfil[] perfis() {
-        return new Perfil[]{Perfil.RESPONSAVEL, Perfil.VETERINARIO};
-    }
 }

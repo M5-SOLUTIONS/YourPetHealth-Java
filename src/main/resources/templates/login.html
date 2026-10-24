@@ -5,56 +5,63 @@
 
 <body>
 
-<main class="container">
-    <div class="caixa-auth">
+<main class="auth">
 
-        <h1 class="mb-1">Entrar</h1>
-        <p class="text-secondary mb-4">Acompanhe a saúde dos seus pets.</p>
+    <aside th:replace="~{layout :: painel-marca(
+            'A saúde do seu pet, acompanhada de perto.',
+            'Consultas, agenda e histórico clínico reunidos em um só lugar, para responsáveis e veterinários.')}"></aside>
 
-        <div th:if="${param.erro}" class="alert alert-danger" role="alert">
-            E-mail ou senha inválidos.
-        </div>
+    <section class="auth-conteudo">
+        <div class="auth-formulario">
 
-        <div th:if="${param.logout}" class="alert alert-success" role="alert">
-            Você saiu da sua conta.
-        </div>
+            <h2 class="auth-titulo">Bem-vindo de volta</h2>
+            <p class="auth-subtitulo">Entre com o e-mail e a senha da sua conta.</p>
 
-        <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
+            <div th:if="${param.erro}" class="alert alert-danger" role="alert">
+                E-mail ou senha inválidos.
+            </div>
 
-        <div class="card">
-            <div class="card-body">
+            <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                Você saiu da sua conta.
+            </div>
 
-                <!-- O POST vai para o filtro do Spring Security, não para um controller.
-                     Os campos precisam se chamar username e password. -->
-                <form th:action="@{/login}" method="post">
+            <div th:if="${sucesso}" class="alert alert-success" role="alert" th:text="${sucesso}"></div>
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label">E-mail</label>
-                        <input type="email" id="username" name="username"
-                               class="form-control" required autofocus
-                               autocomplete="username">
-                    </div>
+            <!-- O POST vai para o filtro do Spring Security, não para um controller.
+                 Os campos precisam se chamar username e password. -->
+            <form th:action="@{/login}" method="post">
 
-                    <div class="mb-4">
-                        <label for="password" class="form-label">Senha</label>
+                <div class="mb-3">
+                    <label for="username" class="form-label">E-mail</label>
+                    <input type="email" id="username" name="username"
+                           class="form-control" required autofocus
+                           autocomplete="username" placeholder="voce@email.com">
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label">Senha</label>
+                    <div class="input-group">
                         <input type="password" id="password" name="password"
                                class="form-control" required
                                autocomplete="current-password">
+                        <button type="button" class="btn btn-outline-secondary"
+                                data-alternar-senha="password"
+                                aria-controls="password" aria-pressed="false">Mostrar</button>
                     </div>
+                </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Entrar</button>
-                </form>
-            </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Entrar</button>
+            </form>
+
+            <p class="auth-alternativa">
+                Ainda não tem conta?
+                <a th:href="@{/cadastro}">Criar conta</a>
+            </p>
         </div>
-
-        <p class="text-center mt-4 mb-0">
-            Ainda não tem conta?
-            <a th:href="@{/cadastro}">Criar uma conta</a>
-        </p>
-    </div>
+    </section>
 </main>
 
-<footer th:replace="~{layout :: footer}"></footer>
+<th:block th:replace="~{layout :: scripts}"></th:block>
 
 </body>
 </html>

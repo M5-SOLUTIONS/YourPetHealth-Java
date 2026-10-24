@@ -20,6 +20,48 @@
 
 <body>
 
+<!-- ---------- Marca ---------- -->
+
+<svg th:fragment="logo" class="logo-marca" viewBox="0 0 32 32"
+     aria-hidden="true" focusable="false">
+    <ellipse cx="16" cy="21" rx="7" ry="6"/>
+    <ellipse cx="7.5" cy="13" rx="2.8" ry="3.4"/>
+    <ellipse cx="12.5" cy="8" rx="2.8" ry="3.4"/>
+    <ellipse cx="19.5" cy="8" rx="2.8" ry="3.4"/>
+    <ellipse cx="24.5" cy="13" rx="2.8" ry="3.4"/>
+</svg>
+
+<!-- Painel lateral das telas de login e cadastro -->
+<aside th:fragment="painel-marca(titulo, subtitulo)" class="auth-marca">
+
+    <a th:href="@{/login}" class="auth-logo">
+        <span class="auth-logo-icone"><svg th:replace="~{layout :: logo}"></svg></span>
+        YourPetHealth
+    </a>
+
+    <div class="auth-chamada">
+        <h1 th:text="${titulo}">Título</h1>
+        <p th:text="${subtitulo}">Subtítulo</p>
+    </div>
+
+    <ul class="auth-beneficios d-none d-lg-block">
+        <li>
+            <strong>Agenda sem conflitos</strong>
+            Cada horário é validado na hora, sem choque com a agenda do veterinário.
+        </li>
+        <li>
+            <strong>Histórico sempre em dia</strong>
+            Todo atendimento concluído vira um registro no histórico clínico do pet.
+        </li>
+        <li>
+            <strong>Cada um vê o que é seu</strong>
+            Responsáveis acessam os próprios pets; veterinários, a própria agenda.
+        </li>
+    </ul>
+</aside>
+
+<!-- ---------- Formulários ---------- -->
+
 <div th:fragment="campo(id, rotulo, tipo)" class="mb-3">
     <label th:for="${id}" class="form-label" th:text="${rotulo}"></label>
     <input th:type="${tipo}" th:id="${id}"
@@ -29,6 +71,8 @@
     <div class="campo-erro" th:if="${#fields.hasErrors(id)}"
          th:errors="*{__${id}__}"></div>
 </div>
+
+<!-- ---------- Navegação ---------- -->
 
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-yph mb-4">
     <div class="container">
@@ -87,14 +131,20 @@
     <div th:if="${erro}" class="alert alert-danger" role="alert" th:text="${erro}"></div>
 </div>
 
-<!-- Os scripts vivem aqui: toda página que inclui o footer os recebe -->
+<!-- ---------- Scripts e rodapé ---------- -->
+
+<!-- Separado do rodapé: as telas de login e cadastro precisam dos scripts, mas não do rodapé -->
+<th:block th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</th:block>
+
 <footer th:fragment="footer" class="py-4 mt-5">
     <div class="container">
         YourPetHealth · Sistema de gestão clínica veterinária
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/app.js}"></script>
+    <th:block th:replace="~{layout :: scripts}"></th:block>
 </footer>
 
 </body>
