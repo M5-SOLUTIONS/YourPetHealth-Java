@@ -1,119 +1,164 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{layout :: head('Atender consulta')}"></head>
+<head th:replace="~{layout :: head('Atendimento')}"></head>
 
 <body>
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container">
+<main class="container" th:with="aberta=${consulta.status.name() == 'AGENDADA'}">
 
-    <nav aria-label="Você está em" class="mb-3">
+    <nav aria-label="Você está em">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a th:href="@{/vet/agenda}">Agenda</a></li>
+            <li class="breadcrumb-item">
+                <a th:href="@{/vet/agenda(data=${consulta.data.toLocalDate()})}">Agenda</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Atendimento</li>
         </ol>
     </nav>
 
-    <h1 class="mb-4">Atendimento</h1>
+    <header class="pagina-topo">
+        <div class="d-flex align-items-center gap-3">
+            <span th:replace="~{layout :: avatar(${pet.nome}, 'avatar-grande')}"></span>
+            <div>
+                <span class="sobretitulo">Atendimento</span>
+                <h1 th:text="${pet.nome}">Pet</h1>
+                <p class="pagina-subtitulo">
+                    <th:block th:replace="~{layout :: tipo(${consulta.tipo})}"></th:block> ·
+                    <span th:text="${#temporals.format(consulta.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</span>
+                </p>
+            </div>
+        </div>
+        <span th:replace="~{layout :: status(${consulta.status})}"></span>
+    </header>
 
     <div class="row g-4">
 
-        <!-- ---------- Dados da consulta e do pet ---------- -->
+        <!-- ---------- Paciente e consulta ---------- -->
         <div class="col-lg-5">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <p class="card-titulo-secao">Consulta</p>
-
-                    <p class="mb-1">
-                        <span class="fw-semibold" th:text="${consulta.tipo}">TIPO</span>
-                    </p>
-                    <p class="mb-2"
-                       th:text="${#temporals.format(consulta.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
-                    <p class="mb-0 small text-secondary" th:if="${consulta.descricao}"
-                       th:text="${consulta.descricao}">motivo</p>
+            <div class="coluna-fixa">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p class="card-titulo-secao">Paciente</p>
+                        <dl class="ficha">
+                            <div>
+                                <dt>Raça</dt>
+                                <dd th:text="${pet.raca} ?: 'Não informada'">Raça</dd>
+                            </div>
+                            <div>
+                                <dt>Sexo</dt>
+                                <dd><th:block th:replace="~{layout :: sexo(${pet.sexo})}"></th:block></dd>
+                            </div>
+                            <div>
+                                <dt>Idade</dt>
+                                <dd th:text="${pet.idade} + (${pet.idade} == 1 ? ' ano' : ' anos')">idade</dd>
+                            </div>
+                            <div>
+                                <dt>Peso</dt>
+                                <dd th:text="${pet.peso} ? ${#numbers.formatDecimal(pet.peso, 1, 'POINT', 1, 'COMMA')} + ' kg' : 'Não informado'">peso</dd>
+                            </div>
+                            <div class="ficha-larga">
+                                <dt>Responsável</dt>
+                                <dd th:text="${pet.responsavelNome}">Responsável</dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <p class="card-titulo-secao">Paciente</p>
-
-                    <p class="fs-5 fw-semibold mb-1" th:text="${pet.nome}">Nome</p>
-                    <p class="text-secondary mb-2">
-                        <span th:text="${pet.raca} ?: 'Raça não informada'">Raça</span> ·
-                        <span th:text="${pet.sexo.name() == 'MACHO'} ? 'Macho' : 'Fêmea'">Sexo</span> ·
-                        <span th:text="${pet.idade} + (${pet.idade} == 1 ? ' ano' : ' anos')">idade</span>
-                    </p>
-                    <p class="mb-0" th:if="${pet.peso}">
-                        <span class="fw-semibold">Peso:</span>
-                        <span th:text="${pet.peso} + ' kg'">peso</span>
-                    </p>
-                    <p class="mb-0 small text-secondary mt-2">
-                        Tutor: <span th:text="${pet.responsavelNome}">tutor</span>
-                    </p>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-titulo-secao">Motivo da consulta</p>
+                        <p class="mb-0" th:if="${consulta.descricao}" th:text="${consulta.descricao}">motivo</p>
+                        <p class="mb-0 text-secondary" th:unless="${consulta.descricao}">
+                            O responsável não descreveu o motivo.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ---------- Conclusão ---------- -->
         <div class="col-lg-7">
-            <div class="card mb-4">
-                <div class="card-body">
+
+            <!-- ---------- Conclusão: só para consulta ainda agendada ---------- -->
+            <div class="card mb-4" th:if="${aberta}">
+                <div class="card-body p-4">
                     <p class="card-titulo-secao">Concluir atendimento</p>
 
                     <form th:action="@{/vet/atender/{id}(id=${consulta.id})}"
-                          th:object="${form}" method="post">
+                          th:object="${form}" method="post" novalidate data-enviar-uma-vez>
 
-                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
-                            <p class="mb-0" th:each="e : ${#fields.globalErrors()}"
-                               th:text="${e}"></p>
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                            <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                         </div>
 
                         <div class="mb-3">
-                            <label for="observacoes" class="form-label">
-                                Observações clínicas
-                            </label>
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <label for="observacoes" class="form-label">Observações clínicas</label>
+                                <span id="contadorObservacoes" class="contador-caracteres"></span>
+                            </div>
                             <textarea id="observacoes" th:field="*{observacoes}"
-                                      class="form-control" rows="6"
-                                      placeholder="Descreva o quadro, a conduta e o retorno recomendado."
+                                      class="form-control" rows="7" maxlength="1000"
+                                      data-contador="contadorObservacoes" data-minimo="10"
+                                      placeholder="Quadro clínico, conduta adotada e retorno recomendado."
                                       th:classappend="${#fields.hasErrors('observacoes')} ? 'is-invalid'"></textarea>
                             <div class="form-text">
-                                Mínimo de 10 caracteres. Este texto vai para o histórico
-                                clínico do pet.
+                                Mínimo de 10 caracteres. O texto vai para o histórico clínico do pet
+                                e fica visível para o responsável.
                             </div>
                             <div class="campo-erro" th:if="${#fields.hasErrors('observacoes')}"
                                  th:errors="*{observacoes}"></div>
                         </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                Concluir consulta
-                            </button>
-                            <a th:href="@{/vet/agenda}" class="btn btn-outline-secondary">
-                                Voltar à agenda
-                            </a>
+                        <div class="formulario-acoes">
+                            <button type="submit" class="btn btn-primary"
+                                    data-texto-enviando="Concluindo…">Concluir consulta</button>
+                            <a th:href="@{/vet/agenda(data=${consulta.data.toLocalDate()})}"
+                               class="btn btn-outline-secondary">Voltar à agenda</a>
                         </div>
                     </form>
                 </div>
             </div>
 
+            <!-- ---------- Consulta encerrada: apenas leitura ---------- -->
+            <div class="card mb-4" th:unless="${aberta}">
+                <div class="card-body">
+                    <p class="card-titulo-secao">Resultado</p>
+                    <p class="mb-0" th:if="${consulta.status.name() == 'CANCELADA'}">
+                        Esta consulta foi cancelada pelo responsável e não pode ser concluída.
+                    </p>
+                    <th:block th:if="${consulta.status.name() == 'REALIZADA'}">
+                        <p class="mb-0 text-secondary">Consulta concluída. Observações registradas:</p>
+                        <p class="observacoes" th:text="${consulta.observacoes}">observações</p>
+                    </th:block>
+                    <a th:href="@{/vet/agenda(data=${consulta.data.toLocalDate()})}"
+                       class="btn btn-outline-secondary btn-sm mt-3">Voltar à agenda</a>
+                </div>
+            </div>
+
             <!-- ---------- Histórico anterior ---------- -->
             <section>
-                <h2 class="mb-3">Histórico clínico</h2>
+                <div class="secao-topo">
+                    <h2>Histórico clínico <span class="contador" th:text="${#lists.size(historicos)}">0</span></h2>
+                </div>
 
                 <div th:if="${#lists.isEmpty(historicos)}" class="vazio">
-                    <p class="mb-0">Primeiro atendimento registrado deste paciente.</p>
+                    <span th:replace="~{layout :: icone-vazio}"></span>
+                    <p class="vazio-titulo">Primeiro atendimento</p>
+                    <p class="vazio-texto">Este paciente ainda não tem registros no histórico clínico.</p>
                 </div>
 
-                <div class="list-group" th:unless="${#lists.isEmpty(historicos)}">
-                    <div class="list-group-item" th:each="h : ${historicos}">
-                        <p class="small text-secondary mb-1"
-                           th:text="${#temporals.format(h.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</p>
-                        <p class="mb-0" th:text="${h.descricao}">descrição</p>
-                    </div>
-                </div>
+                <ol class="linha-tempo linha-tempo-compacta" th:unless="${#lists.isEmpty(historicos)}">
+                    <li class="linha-tempo-item" th:each="h : ${historicos}">
+                        <div class="card">
+                            <div class="card-body py-3">
+                                <time class="linha-tempo-data" th:datetime="${h.data}"
+                                      th:text="${#temporals.format(h.data, 'dd/MM/yyyy ''às'' HH:mm')}">data</time>
+                                <p class="linha-tempo-texto" th:text="${h.descricao}">descrição</p>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
             </section>
         </div>
     </div>

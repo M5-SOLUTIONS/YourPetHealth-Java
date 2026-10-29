@@ -10,22 +10,31 @@
 <nav th:replace="~{layout :: navbar}"></nav>
 
 <main class="container">
-    <div class="caixa-auth text-center">
+    <div class="pagina-aviso">
 
-        <p class="status status-cancelada d-inline-block mb-3">Erro 403</p>
+        <span class="pagina-aviso-icone aviso-bloqueio" aria-hidden="true">!</span>
 
+        <span class="pagina-aviso-codigo">Erro 403 · Acesso negado</span>
         <h1 class="mb-3">Esta área não é sua</h1>
 
-        <p class="text-secondary mb-4">
-            Você está autenticado, mas seu perfil não tem permissão para acessar esta página.
+        <p class="text-secondary mb-0">
+            Você está conectado, mas o seu perfil não tem permissão para abrir esta página.
+            Se chegou aqui por um link, ele pode ser de outra conta.
         </p>
 
-        <!-- Cada perfil volta para a sua própria área inicial -->
-        <a sec:authorize="hasRole('RESPONSAVEL')"
-           th:href="@{/app/home}" class="btn btn-primary">Ir para o início</a>
+        <div class="acoes">
+            <a sec:authorize="hasRole('RESPONSAVEL')"
+               th:href="@{/app/home}" class="btn btn-primary">Ir para o início</a>
 
-        <a sec:authorize="hasRole('VETERINARIO')"
-           th:href="@{/vet/agenda}" class="btn btn-primary">Ir para a agenda</a>
+            <a sec:authorize="hasRole('VETERINARIO')"
+               th:href="@{/vet/agenda}" class="btn btn-primary">Ir para a agenda</a>
+
+            <a sec:authorize="hasRole('ADMIN')"
+               th:href="@{/admin/dashboard}" class="btn btn-primary">Ir para o dashboard</a>
+
+            <a sec:authorize="!isAuthenticated()"
+               th:href="@{/login}" class="btn btn-primary">Entrar</a>
+        </div>
     </div>
 </main>
 

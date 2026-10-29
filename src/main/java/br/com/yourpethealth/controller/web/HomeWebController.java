@@ -1,5 +1,6 @@
 package br.com.yourpethealth.controller.web;
 
+import br.com.yourpethealth.config.DestinoPorPerfil;
 import br.com.yourpethealth.dto.response.ConsultaResponse;
 import br.com.yourpethealth.service.ConsultaService;
 import br.com.yourpethealth.service.PetService;
@@ -17,10 +18,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HomeWebController {
 
-    private static final String ROLE_VETERINARIO = "ROLE_VETERINARIO";
-
     private final PetService petService;
     private final ConsultaService consultaService;
+    private final DestinoPorPerfil destinoPorPerfil;
 
     @GetMapping("/")
     public String raiz(Authentication auth) {
@@ -28,7 +28,7 @@ public class HomeWebController {
                 || auth instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";
         }
-        return ehVeterinario(auth) ? "redirect:/vet/agenda" : "redirect:/app/home";
+        return "redirect:" + destinoPorPerfil.urlInicial(auth);
     }
 
     @GetMapping("/app/home")
@@ -49,10 +49,5 @@ public class HomeWebController {
         model.addAttribute("totalPets", pets.size());
         model.addAttribute("proximasConsultas", proximas);
         return "app/home";
-    }
-
-    private boolean ehVeterinario(Authentication auth) {
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals(ROLE_VETERINARIO));
     }
 }

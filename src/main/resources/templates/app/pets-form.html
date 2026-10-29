@@ -9,80 +9,116 @@
 
 <main class="container">
 
-    <nav aria-label="Você está em" class="mb-3">
+    <nav aria-label="Você está em">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a th:href="@{/app/pets}">Meus pets</a></li>
+            <li class="breadcrumb-item" th:if="${edicao}">
+                <a th:href="@{/app/pets/{id}(id=${petId})}">Ficha do pet</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page"
                 th:text="${edicao} ? 'Editar' : 'Cadastrar'">Cadastrar</li>
         </ol>
     </nav>
 
-    <div style="max-width: 34rem">
+    <div class="formulario-estreito">
 
-        <h1 class="mb-4" th:text="${edicao} ? 'Editar pet' : 'Cadastrar pet'">Cadastrar pet</h1>
+        <header class="pagina-topo">
+            <div>
+                <h1 th:text="${edicao} ? 'Editar dados do pet' : 'Cadastrar pet'">Cadastrar pet</h1>
+                <p class="pagina-subtitulo"
+                   th:text="${edicao} ? 'As alterações valem para as próximas consultas e para a ficha do pet.'
+                                      : 'Só o nome, a idade e o sexo são obrigatórios. O resto você completa depois.'">
+                    Subtítulo
+                </p>
+            </div>
+        </header>
 
         <div class="card">
-            <div class="card-body">
+            <div class="card-body p-4">
 
                 <form th:action="${edicao}
                                  ? @{/app/pets/{id}(id=${petId})}
                                  : @{/app/pets}"
-                      th:object="${form}" method="post">
+                      th:object="${form}" method="post" novalidate data-enviar-uma-vez>
 
-                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
                         <p class="mb-0" th:each="e : ${#fields.globalErrors()}" th:text="${e}"></p>
                     </div>
 
-                    <div th:replace="~{layout :: campo('nome', 'Nome', 'text')}"></div>
+                    <p class="card-titulo-secao">Identificação</p>
 
                     <div class="mb-3">
-                        <label for="raca" class="form-label">Raça</label>
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" id="nome" th:field="*{nome}"
+                               class="form-control" placeholder="Thor" maxlength="100" autofocus
+                               th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid'">
+                        <div class="campo-erro" th:if="${#fields.hasErrors('nome')}"
+                             th:errors="*{nome}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="raca" class="form-label">
+                            Raça <span class="fw-normal text-secondary">(opcional)</span>
+                        </label>
                         <input type="text" id="raca" th:field="*{raca}"
-                               class="form-control" placeholder="Golden Retriever"
+                               class="form-control" placeholder="Golden Retriever" maxlength="100"
                                th:classappend="${#fields.hasErrors('raca')} ? 'is-invalid'">
                         <div class="campo-erro" th:if="${#fields.hasErrors('raca')}"
                              th:errors="*{raca}"></div>
                     </div>
 
+                    <fieldset class="mb-4">
+                        <legend class="form-label fs-6">Sexo</legend>
+                        <div class="chips" th:classappend="${#fields.hasErrors('sexo')} ? 'is-invalid'">
+                            <th:block th:each="s : ${sexos}">
+                                <input type="radio" class="btn-check" th:field="*{sexo}" th:value="${s}">
+                                <label class="chip" th:for="${#ids.prev('sexo')}">
+                                    <th:block th:replace="~{layout :: sexo(${s})}"></th:block>
+                                </label>
+                            </th:block>
+                        </div>
+                        <div class="campo-erro" th:if="${#fields.hasErrors('sexo')}"
+                             th:errors="*{sexo}"></div>
+                    </fieldset>
+
+                    <p class="card-titulo-secao">Medidas</p>
+
                     <div class="row">
-                        <div class="col-6 mb-3">
-                            <label for="idade" class="form-label">Idade (anos)</label>
-                            <input type="number" id="idade" th:field="*{idade}"
-                                   class="form-control" min="0" max="30"
-                                   th:classappend="${#fields.hasErrors('idade')} ? 'is-invalid'">
+                        <div class="col-sm-6 mb-3">
+                            <label for="idade" class="form-label">Idade</label>
+                            <div class="input-group" th:classappend="${#fields.hasErrors('idade')} ? 'has-validation'">
+                                <input type="number" id="idade" th:field="*{idade}"
+                                       class="form-control" min="0" max="30" inputmode="numeric"
+                                       th:classappend="${#fields.hasErrors('idade')} ? 'is-invalid'">
+                                <span class="input-group-text">anos</span>
+                            </div>
                             <div class="campo-erro" th:if="${#fields.hasErrors('idade')}"
                                  th:errors="*{idade}"></div>
                         </div>
 
-                        <div class="col-6 mb-3">
-                            <label for="peso" class="form-label">Peso (kg)</label>
-                            <input type="number" id="peso" th:field="*{peso}"
-                                   class="form-control" step="0.1" min="0" max="200"
-                                   th:classappend="${#fields.hasErrors('peso')} ? 'is-invalid'">
+                        <div class="col-sm-6 mb-3">
+                            <label for="peso" class="form-label">
+                                Peso <span class="fw-normal text-secondary">(opcional)</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="peso" th:field="*{peso}"
+                                       class="form-control" step="0.1" min="0" max="200" inputmode="decimal"
+                                       th:classappend="${#fields.hasErrors('peso')} ? 'is-invalid'">
+                                <span class="input-group-text">kg</span>
+                            </div>
                             <div class="campo-erro" th:if="${#fields.hasErrors('peso')}"
                                  th:errors="*{peso}"></div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="sexo" class="form-label">Sexo</label>
-                        <select id="sexo" th:field="*{sexo}" class="form-select"
-                                th:classappend="${#fields.hasErrors('sexo')} ? 'is-invalid'">
-                            <option value="">Selecione</option>
-                            <option th:each="s : ${sexos}"
-                                    th:value="${s}"
-                                    th:text="${s.name() == 'MACHO'} ? 'Macho' : 'Fêmea'"></option>
-                        </select>
-                        <div class="campo-erro" th:if="${#fields.hasErrors('sexo')}"
-                             th:errors="*{sexo}"></div>
-                    </div>
-
-                    <div class="d-flex gap-2">
+                    <div class="formulario-acoes">
                         <button type="submit" class="btn btn-primary"
-                                th:text="${edicao} ? 'Salvar alterações' : 'Cadastrar pet'">
+                                th:text="${edicao} ? 'Salvar alterações' : 'Cadastrar pet'"
+                                data-texto-enviando="Salvando…">
                             Cadastrar pet
                         </button>
-                        <a th:href="@{/app/pets}" class="btn btn-outline-secondary">Cancelar</a>
+                        <a th:href="${edicao} ? @{/app/pets/{id}(id=${petId})} : @{/app/pets}"
+                           class="btn btn-outline-secondary">Cancelar</a>
                     </div>
                 </form>
             </div>

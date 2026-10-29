@@ -2,6 +2,7 @@ package br.com.yourpethealth.repository;
 
 import br.com.yourpethealth.entity.Consulta;
 import br.com.yourpethealth.entity.enums.StatusConsulta;
+import br.com.yourpethealth.entity.enums.TipoConsulta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,4 +31,14 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
                                                               LocalDateTime inicio, LocalDateTime fim);
 
     List<Consulta> findByPetIdAndStatusAndData(Long petId, StatusConsulta status, LocalDateTime data);
+
+    long countByStatus(StatusConsulta status);
+
+    long countByTipo(TipoConsulta tipo);
+
+    long countByDataBetween(LocalDateTime inicio, LocalDateTime fim);
+
+    long countByStatusAndDataBetween(StatusConsulta status, LocalDateTime inicio, LocalDateTime fim);
+
+    long countByVeterinarioIdAndStatus(Long veterinarioId, StatusConsulta status);
 }

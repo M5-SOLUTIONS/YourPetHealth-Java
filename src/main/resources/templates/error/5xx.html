@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erro no servidor · YourPetHealth</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
+          rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+
+<body>
+
+<main class="container">
+    <div class="pagina-aviso">
+
+        <span class="pagina-aviso-icone aviso-bloqueio" aria-hidden="true">!</span>
+
+        <span class="pagina-aviso-codigo"
+              th:text="|Erro ${status} · Problema no servidor|">Erro 500 · Problema no servidor</span>
+        <h1 class="mb-3">Algo deu errado do nosso lado</h1>
+
+        <p class="text-secondary mb-0">
+            Não foi culpa sua. Tente novamente em alguns instantes;
+            se o problema continuar, avise a clínica.
+        </p>
+
+        <!-- Horário ajuda a achar o erro no log sem expor detalhes ao usuário -->
+        <p class="small text-secondary mt-3 mb-0" th:if="${timestamp}">
+            Ocorrido em
+            <span th:text="${#dates.format(timestamp, 'dd/MM/yyyy ''às'' HH:mm:ss')}">data</span>
+        </p>
+
+        <div class="acoes">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Voltar</a>
+            <!-- "/" redireciona para a tela inicial de cada perfil (ou para o login) -->
+            <a th:href="@{/}" class="btn btn-primary">Ir para o início</a>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
